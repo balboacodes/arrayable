@@ -1,0 +1,44 @@
+{
+    "name": "@balboacodes/arrayable",
+    "version": "0.1.0",
+    "description": "A TypeScript port of Laravel's array helpers",
+    "keywords": [
+        "laravel",
+        "array",
+        "helper"
+    ],
+    "homepage": "https://github.com/balboacodes/arrayable#readme",
+    "bugs": {
+        "url": "https://github.com/balboacodes/arrayable/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/balboacodes/arrayable.git"
+    },
+    "license": "MIT",
+    "author": "Balboa Codes",
+    "type": "module",
+    "main": "dist/index.js",
+    "files": [
+        "dist",
+        "LICENSE",
+        "README.md"
+    ],
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc && vite build",
+        "format": "prettier --write .",
+        "test": "vitest"
+    },
+    "devDependencies": {
+        "prettier": "^3.6.2",
+        "typescript": "^5.9.3",
+        "vite": "^7.1.9",
+        "vite-plugin-dts": "^4.5.4",
+        "vitest": "^3.2.4"
+    },
+    "dependencies": {
+        "@balboacodes/php-utils": "^0.2.0",
+        "@balboacodes/stringable": "^0.4.0"
+    }
+}
