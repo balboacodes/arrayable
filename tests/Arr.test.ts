@@ -365,8 +365,8 @@ test('get', () => {
     expect(Arr.get(array, '0.1', () => 'dayle')).toBe('dayle');
 
     // Test array has a null key
-    expect(Arr.get(['bar'], '')).toBe('bar');
-    expect(Arr.get([['bar']], '.')).toBe('bar');
+    expect(Arr.get({ '': 'bar' }, '')).toBe('bar');
+    expect(Arr.get({ '': { '': 'bar' } }, '.')).toBe('bar');
 });
 
 test('has', () => {
@@ -543,15 +543,15 @@ test('mapSpread', () => {
 });
 
 test('mapWithKeys', () => {
-    let data = [
-        ['Blastoise', 'Water', 9],
-        ['Charmander', 'Fire', 4],
-        ['Dragonair', 'Dragon', 148],
+    let data: any = [
+        { name: 'Blastoise', type: 'Water', idx: 9 },
+        { name: 'Charmander', type: 'Fire', idx: 4 },
+        { name: 'Dragonair', type: 'Dragon', idx: 148 },
     ];
 
-    data = Arr.mapWithKeys(data, (pokemon) => [pokemon[1]]);
+    data = Arr.mapWithKeys(data, (pokemon) => ({ [(pokemon as any)['name']]: (pokemon as any)['type'] }));
 
-    expect(data).toEqual(['Water', 'Fire', 'Dragon']);
+    expect(data).toEqual({ Blastoise: 'Water', Charmander: 'Fire', Dragonair: 'Dragon' });
 });
 
 test('only', () => {
@@ -732,6 +732,10 @@ test('set', () => {
     // No key is given
     array = [[[100]]];
     Arr.set(array, undefined, [300]);
+    expect(array).toEqual([300]);
+
+    array = [[[100]]];
+    Arr.set(array, undefined, 300);
     expect(array).toEqual([300]);
 
     // The key doesn't exist at the depth
