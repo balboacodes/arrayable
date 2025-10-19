@@ -137,7 +137,7 @@ export class Arr {
                 return value(defaultValue);
             }
 
-            return array_first(array);
+            return array_first(array) as any;
         }
 
         const key = array_find_key(array, callback);
@@ -364,7 +364,7 @@ export class Arr {
         defaultValue?: TLastDefault | (() => TLastDefault),
     ): TValue | TLastDefault | undefined {
         if (callback === undefined) {
-            return empty(array) ? value(defaultValue) : array_last(array);
+            return empty(array) ? value(defaultValue) : (array_last(array) as any);
         }
 
         return Arr.first(array_reverse(array), callback, defaultValue);
@@ -423,7 +423,8 @@ export class Arr {
      * Get a subset of the items from the given array.
      */
     public static only(array: any[], keys: (string | number)[] | string | number): any[] {
-        return array_intersect_key(array, array_flip(Array.isArray(keys) ? keys : [keys])) as any[];
+        // @ts-ignore
+        return array_intersect_key(array, array_flip(Array.isArray(keys) ? keys : [keys]));
     }
 
     /**

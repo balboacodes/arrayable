@@ -1,6 +1,6 @@
 {
     "name": "@balboacodes/arrayable",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "A TypeScript port of Laravel's array helpers",
     "keywords": [
         "laravel",
@@ -38,7 +38,7 @@
         "vitest": "^3.2.4"
     },
     "dependencies": {
-        "@balboacodes/php-utils": "^0.2.0",
+        "@balboacodes/php-utils": "^0.3.0",
         "@balboacodes/stringable": "^0.4.0"
     }
 }

@@ -18,7 +18,7 @@ export function data_forget(target: any, key: (string | number)[] | string | num
     const segments = Array.isArray(key) ? [...key] : explode('.', String(key));
     const segment = array_shift(segments);
 
-    if (segment === undefined) {
+    if (segment === null) {
         return;
     }
 
@@ -115,7 +115,7 @@ export function data_set(
     const segments = Array.isArray(key) ? [...key] : explode('.', String(key));
     let segment = array_shift(segments);
 
-    if (segment === undefined) {
+    if (segment === null) {
         return target;
     }
 
@@ -180,6 +180,5 @@ export function last(array: any[]): any {
  * Return the default value of the given value.
  */
 export function value<TValue, TArgs extends any[]>(v: TValue | ((...args: TArgs) => TValue), ...args: TArgs): TValue {
-    // return typeof v === 'function' ? v(...args) : v;
     return typeof v === 'function' ? (v as (...args: TArgs) => TValue)(...args) : v;
 }
