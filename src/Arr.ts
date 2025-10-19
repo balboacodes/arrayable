@@ -1,6 +1,6 @@
 // prettier-ignore
 import {
-    abs, array_all, array_any, array_combine, array_filter, array_find_key, array_first, array_flip, array_intersect_key, array_keys, array_last, array_map, array_merge, array_pop, array_push, array_reverse, array_shift, array_slice, array_unshift, array_values, count, empty, explode, http_build_query, implode, isset, PHP_QUERY_RFC3986, rsort, sort, SORT_FLAG_CASE, SORT_NATURAL, SORT_NUMERIC, SORT_REGULAR, SORT_STRING, str_contains,
+    abs, array_all, array_any, array_filter, array_find_key, array_first, array_flip, array_intersect_key, array_keys, array_last, array_map, array_merge, array_pop, array_push, array_reverse, array_shift, array_slice, array_unshift, array_values, count, empty, explode, http_build_query, implode, isset, PHP_QUERY_RFC3986, rsort, sort, SORT_FLAG_CASE, SORT_NATURAL, SORT_NUMERIC, SORT_REGULAR, SORT_STRING, str_contains,
     unset
 } from '@balboacodes/php-utils';
 import { data_get, value } from './helpers';
@@ -32,11 +32,7 @@ export class Arr {
      *
      * @throws {TypeError} if value at key is not an array.
      */
-    public static array<T>(
-        array: T[] | Record<string, T>,
-        key?: number | string,
-        defaultValue?: T[] | Record<string, T>,
-    ): any[] {
+    public static array<T>(array: T[] | Record<string, T>, key?: number | string, defaultValue?: any): any[] {
         const value = Arr.get(array, key, defaultValue);
 
         if (!Array.isArray(value)) {
@@ -140,7 +136,11 @@ export class Arr {
     /**
      * Determine if the given key exists in the provided array.
      */
-    public static exists<T>(array: T[] | Record<string, T>, key: number | string): boolean {
+    public static exists<T>(array: T[] | Record<string, T>, key: number | string | null): boolean {
+        if (key === null) {
+            key = String(key);
+        }
+
         return key in array;
     }
 
@@ -498,12 +498,13 @@ export class Arr {
         array: T[] | Record<string, T>,
         valueToPluck?: (number | string)[] | number | string | ((item: any) => any),
         key?: (number | string)[] | number | string | ((item: any) => number),
-    ): any[] | Record<string, any> {
-        const results: any[] | Record<string, any> = key === undefined ? [] : {};
+    ): T[] | Record<string, T> {
+        const results: T[] | Record<string, T> = key === undefined ? [] : {};
         [valueToPluck, key] = Arr.explodePluckParameters(valueToPluck, key);
 
         for (const item of Object.values(array)) {
-            const itemValue = typeof valueToPluck === 'function' ? valueToPluck(item) : data_get(item, valueToPluck);
+            const itemValue =
+                typeof valueToPluck === 'function' ? valueToPluck(item) : data_get(item as any, valueToPluck);
 
             // If the key is undefined, we will just append the value to the result and keep
             // looping. Otherwise we will key the result using the value of the key we
@@ -511,7 +512,7 @@ export class Arr {
             if (Array.isArray(results)) {
                 results.push(itemValue);
             } else {
-                const itemKey = typeof key === 'function' ? key(item) : data_get(item, key);
+                const itemKey = typeof key === 'function' ? key(item) : data_get(item as any, key);
 
                 results[itemKey] = itemValue;
             }

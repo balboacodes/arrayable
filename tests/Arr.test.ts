@@ -142,17 +142,17 @@ test('divide', () => {
     expect(values).toEqual([]);
 
     // Test dividing an array with a single key-value pair
-    [keys, values] = Arr.divide(['Desk']);
+    [keys, values as any] = Arr.divide(['Desk']);
     expect(keys).toEqual([0]);
     expect(values).toEqual(['Desk']);
 
     // Test dividing an array with multiple key-value pairs
-    [keys, values] = Arr.divide(['Desk', 100, true]);
+    [keys, values as any] = Arr.divide(['Desk', 100, true]);
     expect(keys).toEqual([0, 1, 2]);
     expect(values).toEqual(['Desk', 100, true]);
 
     // Test dividing an array where the values are arrays
-    [keys, values] = Arr.divide([[1, 'second'], 'one']);
+    [keys, values as any] = Arr.divide([[1, 'second'], 'one']);
     expect(keys).toEqual([0, 1]);
     expect(values).toEqual([[1, 'second'], 'one']);
 });
@@ -555,7 +555,7 @@ test('mapWithKeys', () => {
 });
 
 test('only', () => {
-    let array = ['Desk', 100, 10];
+    let array: any = ['Desk', 100, 10];
     array = Arr.only(array, [0, 1]);
     expect(array).toEqual(['Desk', 100]);
     expect(Arr.only(array, [5])).toEqual([]);
@@ -585,7 +585,7 @@ test('pluck', () => {
     expect(Arr.pluck(data, 100)).toEqual([undefined, undefined]);
     expect(Arr.pluck(data, '100.0')).toEqual([undefined, undefined]);
 
-    let array: any[] = [[['Taylor']], [['Abigail']]];
+    let array: any = [[['Taylor']], [['Abigail']]];
     array = Arr.pluck(array, '0.0');
     expect(array).toEqual(['Taylor', 'Abigail']);
 
@@ -864,7 +864,7 @@ test('toCssStyles', () => {
 });
 
 test('where', () => {
-    let array = [100, '200', 300, '400', 500];
+    let array: any = [100, '200', 300, '400', 500];
 
     array = Arr.where(array, (value) => typeof value === 'string');
 
@@ -872,7 +872,7 @@ test('where', () => {
 });
 
 test('whereNotUndefined', () => {
-    let array = [100, undefined, undefined, '400', 500];
+    let array: any = [100, undefined, undefined, '400', 500];
 
     array = Arr.whereNotUndefined(array);
 

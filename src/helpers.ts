@@ -7,34 +7,35 @@ import { Arr } from './Arr';
 /**
  * Fill in data where it's missing.
  */
-export function data_fill(target: any, key: (string | number)[] | string | number, value: any): any {
+export function data_fill<T>(
+    target: T[] | Record<string, T>,
+    key: (string | number)[] | string | number,
+    value: any,
+): any {
     return data_set(target, key, value, false);
 }
 
 /**
  * Remove / unset an item from an array or object using "dot" notation.
  */
-export function data_forget(target: any, key: (string | number)[] | string | number): any {
+export function data_forget<T>(
+    target: T[] | Record<string, T>,
+    key: (string | number)[] | string | number,
+): T[] | Record<string, T> {
     const segments = Array.isArray(key) ? [...key] : explode('.', String(key));
     const segment = array_shift(segments);
-
-    if (segment === null) {
-        return;
-    }
 
     if (segment === '*' && Arr.accessible(target)) {
         if (segments.length > 0) {
             for (const inner in target) {
-                data_forget(target[inner], segments);
+                data_forget((target as any)[inner], segments);
             }
-        } else {
-            target.length = 0;
         }
     } else if (Arr.accessible(target)) {
         if (segments.length > 0 && Arr.exists(target, segment)) {
-            data_forget(target[segment], segments);
+            data_forget((target as any)[String(segment)], segments);
         } else {
-            Arr.forget(target, segment);
+            Arr.forget(target, String(segment));
         }
     }
 
@@ -44,7 +45,11 @@ export function data_forget(target: any, key: (string | number)[] | string | num
 /**
  * Get an item from an array or object using "dot" notation.
  */
-export function data_get(target: any, key?: (string | number)[] | string | number, defaultValue?: any): any {
+export function data_get<T>(
+    target: T[] | Record<string, T>,
+    key?: (string | number)[] | string | number,
+    defaultValue?: any,
+): any {
     if (key === undefined) {
         return target;
     }
@@ -64,10 +69,12 @@ export function data_get(target: any, key?: (string | number)[] | string | numbe
                 return value(defaultValue);
             }
 
-            const result: any[] = [];
+            const result: any[] | Record<string, any> = Array.isArray(target) ? [] : {};
+            let index = 0;
 
             for (const item of Object.values(target)) {
-                result.push(data_get(item, remaining.length > 0 ? remaining : undefined));
+                (result as any)[index] = data_get(item as any, remaining.length > 0 ? remaining : undefined);
+                index++;
             }
 
             return in_array('*', remaining) ? Arr.collapse(result) : result;
@@ -94,7 +101,7 @@ export function data_get(target: any, key?: (string | number)[] | string | numbe
         }
 
         if (Arr.accessible(target) && Arr.exists(target, segment)) {
-            target = target[segment];
+            target = (target as any)[segment];
         } else {
             return value(defaultValue);
         }
@@ -106,18 +113,14 @@ export function data_get(target: any, key?: (string | number)[] | string | numbe
 /**
  * Set an item on an array or object using dot notation.
  */
-export function data_set(
-    target: any,
+export function data_set<T>(
+    target: T[] | Record<string, T>,
     key: (string | number)[] | string | number,
     value: any,
     overwrite: boolean = true,
-): any {
+): any[] | Record<string, any> {
     const segments = Array.isArray(key) ? [...key] : explode('.', String(key));
     let segment = array_shift(segments);
-
-    if (segment === null) {
-        return target;
-    }
 
     if (segment === '*') {
         if (!Arr.accessible(target)) {
@@ -125,12 +128,12 @@ export function data_set(
         }
 
         if (segments.length > 0) {
-            for (let i = 0; i < target.length; i++) {
-                target[i] = data_set(target[i], segments, value, overwrite);
+            for (let i = 0; i < Object.values(target).length; i++) {
+                (target as any)[i] = data_set((target as any)[i], segments, value, overwrite);
             }
         } else if (overwrite) {
-            for (let i = 0; i < target.length; i++) {
-                target[i] = value;
+            for (let i = 0; i < Object.values(target).length; i++) {
+                (target as any)[i] = value;
             }
         }
 
@@ -140,23 +143,23 @@ export function data_set(
     if (Arr.accessible(target)) {
         if (segments.length > 0) {
             if (!Arr.exists(target, segment)) {
-                target[segment] = [];
+                (target as any)[String(segment)] = Array.isArray(target) ? [] : {};
             }
 
-            target[segment] = data_set(target[segment], segments, value, overwrite);
+            (target as any)[String(segment)] = data_set((target as any)[String(segment)], segments, value, overwrite);
         } else if (overwrite || !Arr.exists(target, segment)) {
-            target[segment] = value;
+            (target as any)[String(segment)] = value;
         }
 
         return target;
     }
 
-    const newTarget: any = [];
+    const newTarget: any[] = [];
 
     if (segments.length > 0) {
-        newTarget[segment] = data_set(newTarget[segment], segments, value, overwrite);
+        newTarget[Number(segment)] = data_set(newTarget[Number(segment)], segments, value, overwrite);
     } else if (overwrite) {
-        newTarget[segment] = value;
+        newTarget[Number(segment)] = value;
     }
 
     return newTarget;
@@ -165,14 +168,14 @@ export function data_set(
 /**
  * Get the first element of an array. Useful for method chaining.
  */
-export function head(array: any[] | Record<string, any>): any {
+export function head<T>(array: T[] | Record<string, T>): any {
     return empty(array) ? false : array_first(array);
 }
 
 /**
  * Get the last element from an array.
  */
-export function last(array: any[] | Record<string, any>): any {
+export function last<T>(array: T[] | Record<string, T>): any {
     return empty(array) ? false : array_last(array);
 }
 
