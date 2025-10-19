@@ -11,13 +11,17 @@ export class Arr {
      * Determine whether the given value is array accessible.
      */
     public static accessible(value: any): boolean {
-        return Array.isArray(value);
+        return Array.isArray(value) || (typeof value === 'object' && value !== null);
     }
 
     /**
      * Add an element to an array using "dot" notation if it doesn't exist.
      */
-    public static add(array: any[], key: string | number, value: any): any[] {
+    public static add(
+        array: any[] | Record<string, any>,
+        key: string | number,
+        value: any,
+    ): any[] | Record<string, any> {
         if (Arr.get(array, key) === undefined) {
             Arr.set(array, key, value);
         }
@@ -30,7 +34,11 @@ export class Arr {
      *
      * @throws {TypeError} if value at key is not an array.
      */
-    public static array(array: any[], key?: string | number, defaultValue?: any[]): any[] {
+    public static array(
+        array: any[] | Record<string, any>,
+        key?: string | number,
+        defaultValue?: any[] | Record<string, any>,
+    ): any[] | Record<string, any> {
         const value = Arr.get(array, key, defaultValue);
 
         if (!Array.isArray(value)) {
@@ -45,7 +53,7 @@ export class Arr {
      *
      * @throws {TypeError} if value at key is not a boolean.
      */
-    public static boolean(array: any[], key?: string | number, defaultValue?: boolean): boolean {
+    public static boolean(array: any[] | Record<string, any>, key?: string | number, defaultValue?: boolean): boolean {
         const value = Arr.get(array, key, defaultValue);
 
         if (typeof value !== 'boolean') {
@@ -58,7 +66,7 @@ export class Arr {
     /**
      * Collapse an array of arrays into a single array.
      */
-    public static collapse(array: any[]): any[] {
+    public static collapse(array: any[] | Record<string, any>): any[] | Record<string, any> {
         const results = [];
 
         for (const values of array) {
@@ -73,7 +81,7 @@ export class Arr {
     /**
      * Cross join the given arrays, returning all possible permutations.
      */
-    public static crossJoin(...arrays: any[][]): any[][] {
+    public static crossJoin(...arrays: (any[] | Record<string, any>)[]): (any[] | Record<string, any>)[] {
         let results: any[][] = [[]];
 
         arrays.forEach((array, index) => {
@@ -97,21 +105,27 @@ export class Arr {
     /**
      * Divide an array into two arrays. One with keys and the other with values.
      */
-    public static divide(array: any[]): any[] {
+    public static divide(array: any[] | Record<string, any>): any[] | Record<string, any> {
         return [array_keys(array), array_values(array)];
     }
 
     /**
      * Determine if all items pass the given truth test.
      */
-    public static every(array: any[], callback: (value: any, key: string | number) => boolean): boolean {
+    public static every(
+        array: any[] | Record<string, any>,
+        callback: (value: any, key: string | number) => boolean,
+    ): boolean {
         return array_all(array, callback);
     }
 
     /**
      * Get all of the given array except for a specified array of keys.
      */
-    public static except(array: any[], keys: (string | number)[] | string | number): any[] {
+    public static except(
+        array: any[] | Record<string, any>,
+        keys: (string | number)[] | string | number,
+    ): any[] | Record<string, any> {
         Arr.forget(array, keys);
 
         return array;
@@ -120,7 +134,7 @@ export class Arr {
     /**
      * Determine if the given key exists in the provided array.
      */
-    public static exists(array: any[], key: number): boolean {
+    public static exists(array: any[] | Record<string, any>, key: number | string): boolean {
         return key in array;
     }
 
@@ -128,7 +142,7 @@ export class Arr {
      * Return the first element in an array passing a given truth test.
      */
     public static first<TValue, TFirstDefault>(
-        array: TValue[],
+        array: TValue[] | Record<string, any>,
         callback?: (value: TValue, key: string | number) => boolean,
         defaultValue?: TFirstDefault | (() => TFirstDefault),
     ): TValue | TFirstDefault | undefined {
@@ -148,7 +162,10 @@ export class Arr {
     /**
      * Flatten a multi-dimensional array into a single level.
      */
-    public static flatten(array: any[], depth: number = Number.MAX_SAFE_INTEGER): any[] {
+    public static flatten(
+        array: any[] | Record<string, any>,
+        depth: number = Number.MAX_SAFE_INTEGER,
+    ): any[] | Record<string, any> {
         const result = [];
 
         for (let item of array) {
@@ -169,7 +186,7 @@ export class Arr {
     /**
      * Remove one or many array items from a given array using "dot" notation.
      */
-    public static forget(array: any[], keys: (string | number)[] | string | number): void {
+    public static forget(array: any[] | Record<string, any>, keys: (string | number)[] | string | number): void {
         const original = array.slice();
         keys = Array.isArray(keys) ? keys : [keys];
 
@@ -224,7 +241,7 @@ export class Arr {
     /**
      * Get an item from an array using "dot" notation.
      */
-    public static get(array: any[], key?: string | number, defaultValue?: any): any {
+    public static get(array: any[] | Record<string, any>, key?: string | number, defaultValue?: any): any {
         if (!Arr.accessible(array)) {
             return value(defaultValue);
         }
@@ -255,7 +272,7 @@ export class Arr {
     /**
      * Check if an item or items exist in an array using "dot" notation.
      */
-    public static has(array: any[], keys: (string | number)[] | string | number): boolean {
+    public static has(array: any[] | Record<string, any>, keys: (string | number)[] | string | number): boolean {
         keys = Array.isArray(keys) ? keys : [keys];
 
         if (array.length === 0 || keys.length === 0) {
@@ -284,7 +301,7 @@ export class Arr {
     /**
      * Determine if all keys exist in an array using "dot" notation.
      */
-    public static hasAll(array: any[], keys: (string | number)[] | string | number): boolean {
+    public static hasAll(array: any[] | Record<string, any>, keys: (string | number)[] | string | number): boolean {
         keys = Array.isArray(keys) ? keys : [keys];
 
         if (array.length === 0 || keys.length === 0) {
@@ -303,7 +320,7 @@ export class Arr {
     /**
      * Determine if any of the keys exist in an array using "dot" notation.
      */
-    public static hasAny(array: any[], keys: (string | number)[] | string | number): boolean {
+    public static hasAny(array: any[] | Record<string, any>, keys: (string | number)[] | string | number): boolean {
         keys = Array.isArray(keys) ? keys : [keys];
 
         if (array.length === 0 || keys.length === 0) {
@@ -324,7 +341,7 @@ export class Arr {
      *
      * @throws {TypeError} if value at key is not an integer.
      */
-    public static integer(array: any[], key?: string | number, defaultValue?: number): number {
+    public static integer(array: any[] | Record<string, any>, key?: string | number, defaultValue?: number): number {
         const value = Arr.get(array, key, defaultValue);
 
         if (!Number.isInteger(value)) {
@@ -337,7 +354,7 @@ export class Arr {
     /**
      * Join all items using a string. The final items can use a separate glue string.
      */
-    public static join(array: any[], glue: string, finalGlue: string = ''): string {
+    public static join(array: any[] | Record<string, any>, glue: string, finalGlue: string = ''): string {
         if (finalGlue === '') {
             return implode(glue, array);
         }
@@ -359,7 +376,7 @@ export class Arr {
      * Return the last element in an array passing a given truth test.
      */
     public static last<TValue, TLastDefault>(
-        array: TValue[],
+        array: TValue[] | Record<string, any>,
         callback?: (value: TValue, key: string | number) => boolean,
         defaultValue?: TLastDefault | (() => TLastDefault),
     ): TValue | TLastDefault | undefined {
@@ -373,7 +390,10 @@ export class Arr {
     /**
      * Run a map over each of the items in the array.
      */
-    public static map(array: any[], callback: (value: any, key?: number) => any): any[] {
+    public static map(
+        array: any[] | Record<string, any>,
+        callback: (value: any, key?: number) => any,
+    ): any[] | Record<string, any> {
         const keys = array_keys(array);
         let items: any[];
 
@@ -389,7 +409,10 @@ export class Arr {
     /**
      * Run a map over each nested chunk of items.
      */
-    public static mapSpread<TValue>(array: any[], callback: (...chunk: any[]) => TValue): TValue[] {
+    public static mapSpread<TValue>(
+        array: any[] | Record<string, any>,
+        callback: (...chunk: any[] | Record<string, any>) => TValue,
+    ): TValue[] {
         return Arr.map(array, function (chunk: any[], key?: number) {
             chunk.push(key);
 
@@ -403,9 +426,9 @@ export class Arr {
      * The callback should return an array with a single value.
      */
     public static mapWithKeys<TValue, TMapWithKeysValue>(
-        array: TValue[],
+        array: TValue[] | Record<string, any>,
         callback: (value: TValue, key: number) => TMapWithKeysValue[],
-    ): any[] {
+    ): any[] | Record<string, any> {
         const result: any[] = [];
 
         array.forEach((value, key) => {
@@ -422,7 +445,10 @@ export class Arr {
     /**
      * Get a subset of the items from the given array.
      */
-    public static only(array: any[], keys: (string | number)[] | string | number): any[] {
+    public static only(
+        array: any[] | Record<string, any>,
+        keys: (string | number)[] | string | number,
+    ): any[] | Record<string, any> {
         // @ts-ignore
         return array_intersect_key(array, array_flip(Array.isArray(keys) ? keys : [keys]));
     }
@@ -430,7 +456,10 @@ export class Arr {
     /**
      * Partition the array into two arrays using the given callback.
      */
-    public static partition<TValue>(array: TValue[], callback: (value: TValue, key: number) => boolean): TValue[][] {
+    public static partition<TValue>(
+        array: TValue[] | Record<string, any>,
+        callback: (value: TValue, key: number) => boolean,
+    ): (TValue[] | Record<string, any>)[] {
         const passed: TValue[] = [];
         const failed: TValue[] = [];
 
@@ -451,10 +480,10 @@ export class Arr {
      * @param key not supported because arrays can only have numeric keys.
      */
     public static pluck(
-        array: any[],
+        array: any[] | Record<string, any>,
         valueToPluck?: (string | number)[] | string | number | ((item: any) => any),
         key?: (string | number)[] | string | number | ((item: any) => number),
-    ): any[] {
+    ): any[] | Record<string, any> {
         const results: any[] = [];
         [valueToPluck, key] = Arr.explodePluckParameters(valueToPluck, key);
 
@@ -479,7 +508,7 @@ export class Arr {
     /**
      * Push an item onto the beginning of an array.
      */
-    public static prepend(array: any[], value: any, _key?: any): any[] {
+    public static prepend(array: any[] | Record<string, any>, value: any, _key?: any): any[] | Record<string, any> {
         if (arguments.length == 2) {
             array_unshift(array, value);
         } else {
@@ -492,7 +521,7 @@ export class Arr {
     /**
      * Get a value from the array, and remove it.
      */
-    public static pull(array: any[], key: string | number, defaultValue?: any): any {
+    public static pull(array: any[] | Record<string, any>, key: string | number, defaultValue?: any): any {
         const value = Arr.get(array, key, defaultValue);
 
         Arr.forget(array, key);
@@ -503,7 +532,11 @@ export class Arr {
     /**
      * Push an item into an array using "dot" notation.
      */
-    public static push(array: any[], key?: string | number, ...values: any[]): any[] {
+    public static push(
+        array: any[] | Record<string, any>,
+        key?: string | number,
+        ...values: any[]
+    ): any[] | Record<string, any> {
         const target = Arr.array(array, key, []).slice();
 
         array_push(target, ...values);
@@ -514,21 +547,27 @@ export class Arr {
     /**
      * Convert the array into a query string.
      */
-    public static query(array: any[]): string {
+    public static query(array: any[] | Record<string, any>): string {
         return http_build_query(array, '', '&', PHP_QUERY_RFC3986);
     }
 
     /**
      * Filter the array using the negation of the given callback.
      */
-    public static reject(array: any[], callback: (value: any) => boolean): any[] {
+    public static reject(
+        array: any[] | Record<string, any>,
+        callback: (value: any) => boolean,
+    ): any[] | Record<string, any> {
         return Arr.where(array, (value: any) => !callback(value));
     }
 
     /**
      * Select an array of values from an array.
      */
-    public static select(array: any[], keys: (string | number)[] | string | number): any[] {
+    public static select(
+        array: any[] | Record<string, any>,
+        keys: (string | number)[] | string | number,
+    ): any[] | Record<string, any> {
         keys = Arr.wrap(keys);
 
         return Arr.map(array, (item) => {
@@ -550,7 +589,11 @@ export class Arr {
      *
      * If no key is given to the method, the entire array will be replaced.
      */
-    public static set(array: any[], key?: string | number, value?: any): any[] {
+    public static set(
+        array: any[] | Record<string, any>,
+        key?: string | number,
+        value?: any,
+    ): any[] | Record<string, any> {
         if (key === undefined) {
             array.length = 0;
             array.push(...value);
@@ -591,7 +634,7 @@ export class Arr {
      * @throws {Error} if array is empty.
      * @throws {Error} if array has more than one item.
      */
-    public static sole(array: any[], callback?: (value: any) => boolean): any {
+    public static sole(array: any[] | Record<string, any>, callback?: (value: any) => boolean): any {
         if (callback) {
             array = Arr.where(array, callback);
         }
@@ -612,7 +655,10 @@ export class Arr {
     /**
      * Determine if some items pass the given truth test.
      */
-    public static some(array: any[], callback: (value: any, key: string | number) => boolean): boolean {
+    public static some(
+        array: any[] | Record<string, any>,
+        callback: (value: any, key: string | number) => boolean,
+    ): boolean {
         return array_any(array, callback);
     }
 
@@ -620,7 +666,7 @@ export class Arr {
      * Recursively sort an array by keys and values.
      */
     public static sortRecursive(
-        array: any[],
+        array: any[] | Record<string, any>,
         options: (
             | typeof SORT_REGULAR
             | typeof SORT_NUMERIC
@@ -629,7 +675,7 @@ export class Arr {
             | typeof SORT_FLAG_CASE
         )[] = [SORT_REGULAR],
         descending: boolean = false,
-    ): any[] {
+    ): any[] | Record<string, any> {
         for (let value of array) {
             if (Array.isArray(value)) {
                 value = Arr.sortRecursive(value, options, descending);
@@ -645,7 +691,7 @@ export class Arr {
      * Recursively sort an array by keys and values in descending order.
      */
     public static sortRecursiveDesc(
-        array: any[],
+        array: any[] | Record<string, any>,
         options: (
             | typeof SORT_REGULAR
             | typeof SORT_NUMERIC
@@ -653,7 +699,7 @@ export class Arr {
             | typeof SORT_NATURAL
             | typeof SORT_FLAG_CASE
         )[] = [SORT_REGULAR],
-    ): any[] {
+    ): any[] | Record<string, any> {
         return Arr.sortRecursive(array, options, true);
     }
 
@@ -662,7 +708,7 @@ export class Arr {
      *
      * @throws {TypeError} if array value at key is not a string.
      */
-    public static string(array: any[], key?: string | number, defaultValue?: string): string {
+    public static string(array: any[] | Record<string, any>, key?: string | number, defaultValue?: string): string {
         const value = Arr.get(array, key, defaultValue);
 
         if (typeof value !== 'string') {
@@ -675,7 +721,7 @@ export class Arr {
     /**
      * Take the first or last {limit} items from an array.
      */
-    public static take(array: any[], limit: number): any[] {
+    public static take(array: any[] | Record<string, any>, limit: number): any[] | Record<string, any> {
         if (limit < 0) {
             return array_slice(array, limit, abs(limit));
         }
@@ -709,14 +755,17 @@ export class Arr {
     /**
      * Filter the array using the given callback.
      */
-    public static where(array: any[], callback: (value: any) => boolean): any[] {
+    public static where(
+        array: any[] | Record<string, any>,
+        callback: (value: any) => boolean,
+    ): any[] | Record<string, any> {
         return array_filter(array, callback);
     }
 
     /**
      * Filter items where the value is not undefined.
      */
-    public static whereNotUndefined(array: any[]): any[] {
+    public static whereNotUndefined(array: any[] | Record<string, any>): any[] | Record<string, any> {
         return Arr.where(array, (value) => value !== undefined);
     }
 

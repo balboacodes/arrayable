@@ -1,6 +1,6 @@
 // prettier-ignore
 import {
-    array_first, array_key_first, array_key_last, array_last, array_shift, empty, explode, in_array
+    array_first, array_key_first, array_key_last, array_last, array_shift, empty, explode, in_array,
 } from '@balboacodes/php-utils';
 import { Arr } from './Arr';
 
@@ -31,7 +31,7 @@ export function data_forget(target: any, key: (string | number)[] | string | num
             target.length = 0;
         }
     } else if (Arr.accessible(target)) {
-        if (segments.length > 0 && Arr.exists(target, Number(segment))) {
+        if (segments.length > 0 && Arr.exists(target, segment)) {
             data_forget(target[segment], segments);
         } else {
             Arr.forget(target, segment);
@@ -60,13 +60,13 @@ export function data_get(target: any, key?: (string | number)[] | string | numbe
         }
 
         if (segment === '*') {
-            if (!Array.isArray(target)) {
+            if (!Arr.accessible(target)) {
                 return value(defaultValue);
             }
 
             const result: any[] = [];
 
-            for (const item of target) {
+            for (const item of Object.values(target)) {
                 result.push(data_get(item, remaining.length > 0 ? remaining : undefined));
             }
 
@@ -93,7 +93,7 @@ export function data_get(target: any, key?: (string | number)[] | string | numbe
                 segment = segment;
         }
 
-        if (Arr.accessible(target) && Arr.exists(target, Number(segment))) {
+        if (Arr.accessible(target) && Arr.exists(target, segment)) {
             target = target[segment];
         } else {
             return value(defaultValue);
@@ -139,12 +139,12 @@ export function data_set(
 
     if (Arr.accessible(target)) {
         if (segments.length > 0) {
-            if (!Arr.exists(target, Number(segment)) || typeof target[segment] !== 'object') {
+            if (!Arr.exists(target, segment)) {
                 target[segment] = [];
             }
 
             target[segment] = data_set(target[segment], segments, value, overwrite);
-        } else if (overwrite || !(segment in target)) {
+        } else if (overwrite || !Arr.exists(target, segment)) {
             target[segment] = value;
         }
 
@@ -165,14 +165,14 @@ export function data_set(
 /**
  * Get the first element of an array. Useful for method chaining.
  */
-export function head(array: any[]): any {
+export function head(array: any[] | Record<string, any>): any {
     return empty(array) ? false : array_first(array);
 }
 
 /**
  * Get the last element from an array.
  */
-export function last(array: any[]): any {
+export function last(array: any[] | Record<string, any>): any {
     return empty(array) ? false : array_last(array);
 }
 

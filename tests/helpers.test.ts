@@ -2,7 +2,7 @@ import { expect, test } from 'vitest';
 import { data_fill, data_forget, data_get, data_set, head, last, value } from '../src/helpers';
 
 test('data_fill', () => {
-    let data: any[] = ['bar'];
+    let data: any = ['bar'];
 
     expect(data_fill(data, 1, 'boom')).toEqual(['bar', 'boom']);
     expect(data_fill(data, 1, 'noop')).toEqual(['bar', 'boom']);
@@ -20,6 +20,25 @@ test('data_fill', () => {
     data = [[[[['First'], []]], [[[], ['Second']]]]];
 
     expect(data_fill(data, '0.*.0.*.0', 'Filled')).toEqual([[[[['First'], ['Filled']]], [[['Filled'], ['Second']]]]]);
+
+    data = { 0: 'bar' };
+
+    expect(data_fill(data, 1, 'boom')).toEqual({ 0: 'bar', 1: 'boom' });
+    expect(data_fill(data, 1, 'noop')).toEqual({ 0: 'bar', 1: 'boom' });
+    expect(data_fill(data, '0.*', 'noop')).toEqual({ 0: [], 1: 'boom' });
+    // expect(data_fill(data, '0.0', 'kaboom')).toEqual([['kaboom'], 'boom']);
+
+    // data = ['bar'];
+
+    // expect(data_fill(data, '0.*.0', 'noop')).toEqual([[]]);
+    // expect(data_fill(data, 1, [['original'], []])).toEqual([[], [['original'], []]]);
+    // expect(data_fill(data, '1.*.0', 'boom')).toEqual([[], [['original'], ['boom']]]);
+
+    // expect(data_fill(data, '1.*', 'noop')).toEqual([[], [['original'], ['boom']]]);
+
+    // data = [[[[['First'], []]], [[[], ['Second']]]]];
+
+    // expect(data_fill(data, '0.*.0.*.0', 'Filled')).toEqual([[[[['First'], ['Filled']]], [[['Filled'], ['Second']]]]]);
 });
 
 test('data_forget', () => {

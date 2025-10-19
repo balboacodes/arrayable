@@ -5,14 +5,14 @@ import { mb_strtoupper, str_contains } from '@balboacodes/php-utils';
 test('accessible', () => {
     expect(Arr.accessible([])).toBe(true);
     expect(Arr.accessible([1, 2])).toBe(true);
-    expect(Arr.accessible({ a: 1, b: 2 })).toBe(false);
+    expect(Arr.accessible({ a: 1, b: 2 })).toBe(true);
     expect(Arr.accessible(null)).toBe(false);
     expect(Arr.accessible('abc')).toBe(false);
-    expect(Arr.accessible({})).toBe(false);
+    expect(Arr.accessible({})).toBe(true);
     expect(Arr.accessible(123)).toBe(false);
     expect(Arr.accessible(12.34)).toBe(false);
     expect(Arr.accessible(true)).toBe(false);
-    expect(Arr.accessible(new Date())).toBe(false);
+    expect(Arr.accessible(new Date())).toBe(true);
     expect(Arr.accessible(() => null)).toBe(false);
 });
 
