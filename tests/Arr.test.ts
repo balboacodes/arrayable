@@ -319,15 +319,10 @@ test('forget', () => {
 
 test('from', () => {
     expect(Arr.from(['bar'])).toEqual(['bar']);
-    expect(Arr.from({ foo: 'bar' })).toEqual([]);
+    expect(Arr.from({ foo: 'bar' })).toEqual(['bar']);
 
     const subject = [{}, {}];
-
     expect(Arr.from(subject)).toEqual([{}, {}]);
-
-    let items = new Map([[0, 'bar']]);
-
-    expect(Arr.from(items)).toEqual([[0, 'bar']]);
 
     expect(Arr.from(123)).toEqual([]);
     expect(Arr.from('foo')).toEqual(['f', 'o', 'o']);

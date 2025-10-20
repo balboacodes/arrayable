@@ -243,6 +243,10 @@ export class Arr {
      */
     public static from(items: any): any[] {
         try {
+            if (Arr.accessible(items)) {
+                return Array.from(Object.values(items));
+            }
+
             return Array.from(items);
         } catch {
             throw new TypeError('Items cannot be represented by a scalar value.');

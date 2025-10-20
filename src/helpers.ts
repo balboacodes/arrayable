@@ -88,13 +88,13 @@ export function data_get<T>(
                 segment = '{first}';
                 break;
             case '{first}':
-                segment = array_key_first(Arr.from(target)) as string | number;
+                segment = array_key_first(target) as string | number;
                 break;
             case '\\{last}':
                 segment = '{last}';
                 break;
             case '{last}':
-                segment = array_key_last(Arr.from(target)) as string | number;
+                segment = array_key_last(target) as string | number;
                 break;
             default:
                 segment = segment;
@@ -119,12 +119,14 @@ export function data_set<T>(
     value: any,
     overwrite: boolean = true,
 ): any[] | Record<string, any> {
+    // Spreading the key into a new array creates a shallow copy of it, allowing us to modify the top-level properties
+    // without affecting the reference passed in.
     const segments = Array.isArray(key) ? [...key] : explode('.', String(key));
     let segment = array_shift(segments);
 
     if (segment === '*') {
         if (!Arr.accessible(target)) {
-            target = [];
+            target = {};
         }
 
         if (segments.length > 0) {
@@ -154,12 +156,12 @@ export function data_set<T>(
         return target;
     }
 
-    const newTarget: any[] = [];
+    const newTarget: Record<string, any> = {};
 
     if (segments.length > 0) {
-        newTarget[Number(segment)] = data_set(newTarget[Number(segment)], segments, value, overwrite);
+        newTarget[segment] = data_set(newTarget[segment], segments, value, overwrite);
     } else if (overwrite) {
-        newTarget[Number(segment)] = value;
+        newTarget[segment] = value;
     }
 
     return newTarget;

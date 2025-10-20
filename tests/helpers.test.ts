@@ -2,226 +2,298 @@ import { expect, test } from 'vitest';
 import { data_fill, data_forget, data_get, data_set, head, last, value } from '../src/helpers';
 
 test('data_fill', () => {
-    let data: any = ['bar'];
+    let data: any = { foo: 'bar' };
 
-    expect(data_fill(data, 1, 'boom')).toEqual(['bar', 'boom']);
-    expect(data_fill(data, 1, 'noop')).toEqual(['bar', 'boom']);
-    expect(data_fill(data, '0.*', 'noop')).toEqual([[], 'boom']);
-    expect(data_fill(data, '0.0', 'kaboom')).toEqual([['kaboom'], 'boom']);
+    expect(data_fill(data, 'baz', 'boom')).toEqual({ foo: 'bar', baz: 'boom' });
+    expect(data_fill(data, 'baz', 'noop')).toEqual({ foo: 'bar', baz: 'boom' });
+    expect(data_fill(data, 'foo.*', 'noop')).toEqual({ foo: {}, baz: 'boom' });
+    expect(data_fill(data, 'foo.bar', 'kaboom')).toEqual({ foo: { bar: 'kaboom' }, baz: 'boom' });
 
-    data = ['bar'];
+    data = { foo: 'bar' };
 
-    expect(data_fill(data, '0.*.0', 'noop')).toEqual([[]]);
-    expect(data_fill(data, 1, [['original'], []])).toEqual([[], [['original'], []]]);
-    expect(data_fill(data, '1.*.0', 'boom')).toEqual([[], [['original'], ['boom']]]);
+    expect(data_fill(data, 'foo.*.bar', 'noop')).toEqual({ foo: {} });
+    expect(data_fill(data, 'bar', [{ baz: 'original' }, []])).toEqual({ foo: {}, bar: [{ baz: 'original' }, []] });
+    expect({ foo: {}, bar: [{ baz: 'original' }, { baz: 'boom' }] }, data_fill(data, 'bar.*.baz', 'boom'));
+    expect({ foo: {}, bar: [{ baz: 'original' }, { baz: 'boom' }] }, data_fill(data, 'bar.*', 'noop'));
 
-    expect(data_fill(data, '1.*', 'noop')).toEqual([[], [['original'], ['boom']]]);
+    data = {
+        posts: [
+            {
+                comments: [{ name: 'First' }, {}],
+            },
+            {
+                comments: [{}, { name: 'Second' }],
+            },
+        ],
+    };
 
-    data = [[[[['First'], []]], [[[], ['Second']]]]];
-
-    expect(data_fill(data, '0.*.0.*.0', 'Filled')).toEqual([[[[['First'], ['Filled']]], [[['Filled'], ['Second']]]]]);
-
-    data = { 0: 'bar' };
-
-    expect(data_fill(data, 1, 'boom')).toEqual({ 0: 'bar', 1: 'boom' });
-    expect(data_fill(data, 1, 'noop')).toEqual({ 0: 'bar', 1: 'boom' });
-    expect(data_fill(data, '0.*', 'noop')).toEqual({ 0: [], 1: 'boom' });
-    // expect(data_fill(data, '0.0', 'kaboom')).toEqual([['kaboom'], 'boom']);
-
-    // data = ['bar'];
-
-    // expect(data_fill(data, '0.*.0', 'noop')).toEqual([[]]);
-    // expect(data_fill(data, 1, [['original'], []])).toEqual([[], [['original'], []]]);
-    // expect(data_fill(data, '1.*.0', 'boom')).toEqual([[], [['original'], ['boom']]]);
-
-    // expect(data_fill(data, '1.*', 'noop')).toEqual([[], [['original'], ['boom']]]);
-
-    // data = [[[[['First'], []]], [[[], ['Second']]]]];
-
-    // expect(data_fill(data, '0.*.0.*.0', 'Filled')).toEqual([[[[['First'], ['Filled']]], [[['Filled'], ['Second']]]]]);
+    expect(data_fill(data, 'posts.*.comments.*.name', 'Filled')).toEqual({
+        posts: [
+            {
+                comments: [{ name: 'First' }, { name: 'Filled' }],
+            },
+            {
+                comments: [{ name: 'Filled' }, { name: 'Second' }],
+            },
+        ],
+    });
 });
 
 test('data_forget', () => {
-    let data: any[] = ['bar', 'world'];
+    let data: any = { foo: 'bar', hello: 'world' };
 
-    expect(data_forget(data, 0)).toEqual(['world']);
+    expect(data_forget(data, 'foo')).toEqual({ hello: 'world' });
 
-    data = ['bar', 'world'];
+    data = { foo: 'bar', hello: 'world' };
 
-    expect(data_forget(data, 2)).toEqual(['bar', 'world']);
+    expect(data_forget(data, 'nothing')).toEqual({ foo: 'bar', hello: 'world' });
 
-    data = [[['hello', ['five']]]];
+    data = { one: { two: { three: 'hello', four: ['five'] } } };
 
-    expect(data_forget(data, '0.0.0')).toEqual([[[['five']]]]);
+    expect(data_forget(data, 'one.two.three')).toEqual({ one: { two: { four: ['five'] } } });
 
-    data = [
-        [
-            'Foo',
-            [
-                ['foo', 'First'],
-                ['bar', 'Second'],
+    data = {
+        article: {
+            title: 'Foo',
+            comments: [
+                { comment: 'foo', name: 'First' },
+                { comment: 'bar', name: 'Second' },
             ],
-        ],
-    ];
+        },
+    };
 
-    expect(data_forget(data, '0.1.*.1')).toEqual([['Foo', [['foo'], ['bar']]]]);
+    expect(data_forget(data, 'article.comments.*.name')).toEqual({
+        article: {
+            title: 'Foo',
+            comments: [{ comment: 'foo' }, { comment: 'bar' }],
+        },
+    });
 
-    data = [
-        [
-            [
-                [
-                    ['First', 'foo'],
-                    ['Second', 'bar'],
+    data = {
+        posts: [
+            {
+                comments: [
+                    { name: 'First', comment: 'foo' },
+                    { name: 'Second', comment: 'bar' },
                 ],
-            ],
-            [
-                [
-                    ['Third', 'hello'],
-                    ['Fourth', 'world'],
+            },
+            {
+                comments: [
+                    { name: 'Third', comment: 'hello' },
+                    { name: 'Fourth', comment: 'world' },
                 ],
-            ],
+            },
         ],
-    ];
+    };
 
-    data_forget(data, '0.*.0.*.0');
-
-    expect(data).toEqual([[[[['foo'], ['bar']]], [[['hello'], ['world']]]]]);
+    expect(data_forget(data, 'posts.*.comments.*.name')).toEqual({
+        posts: [
+            {
+                comments: [{ comment: 'foo' }, { comment: 'bar' }],
+            },
+            {
+                comments: [{ comment: 'hello' }, { comment: 'world' }],
+            },
+        ],
+    });
 });
 
 test('data_get', () => {
-    const object = [[['Taylor', 'Otwell']]];
-    expect(data_get(object, '0.0.0')).toBe('Taylor');
+    const object = { users: { name: ['Taylor', 'Otwell'] } };
+    let array: any = [{ users: [{ name: 'Taylor' }] }];
+    const dottedArray = { users: { 'first.name': 'Taylor', 'middle.name': null } };
 
-    let array: any[] = [[[['Taylor']]]];
-    expect(data_get(array, '0.0.0.0')).toBe('Taylor');
-    expect(data_get(array, '0.0.3')).toBe(undefined);
-    expect(data_get(array, '0.0.3', 'Not found')).toBe('Not found');
-    expect(data_get(array, '0.0.3', () => 'Not found')).toBe('Not found');
+    expect(data_get(object, 'users.name.0')).toBe('Taylor');
+    expect(data_get(array, '0.users.0.name')).toBe('Taylor');
+    expect(data_get(array, '0.users.3')).toBe(undefined);
+    expect(data_get(array, '0.users.3', 'Not found')).toBe('Not found');
+    expect(data_get(array, '0.users.3', () => 'Not found')).toBe('Not found');
+    expect(data_get(dottedArray, ['users', 'first.name'])).toBe('Taylor');
+    expect(data_get(dottedArray, ['users', 'middle.name'])).toBe(null);
+    expect(data_get(dottedArray, ['users', 'last.name'], 'Not found')).toBe('Not found');
 
-    const dottedArray = [['Taylor', undefined]];
-    expect(data_get(dottedArray, [0, 0])).toBe('Taylor');
-    expect(data_get(dottedArray, [0, 1])).toBe(undefined);
-    expect(data_get(dottedArray, [0, 100], 'Not found')).toBe('Not found');
+    array = [{ name: 'taylor', email: 'taylorotwell@gmail.com' }, { name: 'abigail' }, { name: 'dayle' }];
 
-    array = [['taylor', 'taylorotwell@gmail.com'], ['abigail'], ['dayle']];
-    expect(data_get(array, '*.0')).toEqual(['taylor', 'abigail', 'dayle']);
-    expect(data_get(array, '*.1', 'irrelevant')).toEqual(['taylorotwell@gmail.com', undefined, undefined]);
+    expect(data_get(array, '*.name')).toEqual(['taylor', 'abigail', 'dayle']);
+    expect(data_get(array, '*.email', 'irrelevant')).toEqual(['taylorotwell@gmail.com', undefined, undefined]);
 
-    array = [
-        [
-            ['taylor', 'otwell', 'taylorotwell@gmail.com'],
-            ['abigail', 'otwell'],
-            ['dayle', 'rees'],
+    array = {
+        users: [
+            { first: 'taylor', last: 'otwell', email: 'taylorotwell@gmail.com' },
+            { first: 'abigail', last: 'otwell' },
+            { first: 'dayle', last: 'rees' },
         ],
-        null,
-    ];
-    expect(data_get(array, '0.*.0')).toEqual(['taylor', 'abigail', 'dayle']);
-    expect(data_get(array, '0.*.2', 'irrelevant')).toEqual(['taylorotwell@gmail.com', undefined, undefined]);
-    expect(data_get(array, '1.*.1', 'not found')).toBe('not found');
-    expect(data_get(array, '1.*.1')).toBe(undefined);
+        posts: null,
+    };
 
-    array = [
-        [
-            [
-                [
-                    ['taylor', 4],
-                    ['abigail', 3],
+    expect(data_get(array, 'users.*.first')).toEqual(['taylor', 'abigail', 'dayle']);
+    expect(data_get(array, 'users.*.email', 'irrelevant')).toEqual(['taylorotwell@gmail.com', undefined, undefined]);
+    expect(data_get(array, 'posts.*.date', 'not found')).toBe('not found');
+    expect(data_get(array, 'posts.*.date')).toBe(undefined);
+
+    array = {
+        posts: [
+            {
+                comments: [
+                    { author: 'taylor', likes: 4 },
+                    { author: 'abigail', likes: 3 },
                 ],
-            ],
-            [[['abigail', 2], ['dayle']]],
-            [[['dayle'], ['taylor', 1]]],
+            },
+            {
+                comments: [{ author: 'abigail', likes: 2 }, { author: 'dayle' }],
+            },
+            {
+                comments: [{ author: 'dayle' }, { author: 'taylor', likes: 1 }],
+            },
         ],
-    ];
-    expect(data_get(array, '0.*.0.*.0')).toEqual(['taylor', 'abigail', 'abigail', 'dayle', 'dayle', 'taylor']);
-    expect(data_get(array, '0.*.0.*.1')).toEqual([4, 3, 2, undefined, undefined, 1]);
-    expect(data_get(array, '0.*.100.*.100', 'irrelevant')).toEqual([]);
-    expect(data_get(array, '0.*.100.*.100')).toEqual([]);
+    };
 
-    array = [
-        [
-            [
-                [
-                    ['LHR', '9:00', 'IST', '15:00'],
-                    ['IST', '16:00', 'PKX', '20:00'],
+    expect(data_get(array, 'posts.*.comments.*.author')).toEqual([
+        'taylor',
+        'abigail',
+        'abigail',
+        'dayle',
+        'dayle',
+        'taylor',
+    ]);
+
+    expect(data_get(array, 'posts.*.comments.*.likes')).toEqual([4, 3, 2, undefined, undefined, 1]);
+    expect(data_get(array, 'posts.*.users.*.name', 'irrelevant')).toEqual([]);
+    expect(data_get(array, 'posts.*.users.*.name')).toEqual([]);
+
+    array = {
+        flights: [
+            {
+                segments: [
+                    { from: 'LHR', departure: '9:00', to: 'IST', arrival: '15:00' },
+                    { from: 'IST', departure: '16:00', to: 'PKX', arrival: '20:00' },
                 ],
-            ],
-            [
-                [
-                    ['LGW', '8:00', 'SAW', '14:00'],
-                    ['SAW', '15:00', 'PEK', '19:00'],
+            },
+            {
+                segments: [
+                    { from: 'LGW', departure: '8:00', to: 'SAW', arrival: '14:00' },
+                    { from: 'SAW', departure: '15:00', to: 'PEK', arrival: '19:00' },
                 ],
-            ],
+            },
         ],
-        [],
-    ];
-    expect(data_get(array, '0.0.0.{first}.0')).toBe('LHR');
-    expect(data_get(array, '0.0.0.{last}.2')).toBe('PKX');
-    expect(data_get(array, '0.{first}.0.{first}.0')).toBe('LHR');
-    expect(data_get(array, '0.{last}.0.{last}.2')).toBe('PEK');
-    expect(data_get(array, '0.{first}.0.{last}.2')).toBe('PKX');
-    expect(data_get(array, '0.{last}.0.{first}.0')).toBe('LGW');
-    expect(data_get(array, '0.{first}.0.*.0')).toEqual(['LHR', 'IST']);
-    expect(data_get(array, '0.{last}.0.*.2')).toEqual(['SAW', 'PEK']);
-    expect(data_get(array, '0.*.0.{first}.0')).toEqual(['LHR', 'LGW']);
-    expect(data_get(array, '0.*.0.{last}.2')).toEqual(['PKX', 'PEK']);
-    expect(data_get(array, '100.{first}', 'Not found')).toBe('Not found');
-    expect(data_get(array, '100.{last}', 'Not found')).toBe('Not found');
+        empty: [],
+    };
 
-    array = [
-        ['second', 'last', 'first'],
-        ['first', 'second', 'last'],
-    ];
-    expect(data_get(array, '0.0')).toBe('second');
-    expect(data_get(array, '0.{first}')).toBe('second');
-    expect(data_get(array, '0.{last}')).toBe('first');
-    expect(data_get(array, '1.{first}')).toBe('first');
-    expect(data_get(array, '1.{last}')).toBe('last');
+    expect(data_get(array, 'flights.0.segments.{first}.from')).toEqual('LHR');
+    expect(data_get(array, 'flights.0.segments.{last}.to')).toEqual('PKX');
+    expect(data_get(array, 'flights.{first}.segments.{first}.from')).toEqual('LHR');
+    expect(data_get(array, 'flights.{last}.segments.{last}.to')).toEqual('PEK');
+    expect(data_get(array, 'flights.{first}.segments.{last}.to')).toEqual('PKX');
+    expect(data_get(array, 'flights.{last}.segments.{first}.from')).toEqual('LGW');
+    expect(data_get(array, 'flights.{first}.segments.*.from')).toEqual(['LHR', 'IST']);
+    expect(data_get(array, 'flights.{last}.segments.*.to')).toEqual(['SAW', 'PEK']);
+    expect(data_get(array, 'flights.*.segments.{first}.from')).toEqual(['LHR', 'LGW']);
+    expect(data_get(array, 'flights.*.segments.{last}.to')).toEqual(['PKX', 'PEK']);
+    expect(data_get(array, 'empty.{first}', 'Not found')).toEqual('Not found');
+    expect(data_get(array, 'empty.{last}', 'Not found')).toEqual('Not found');
 
-    array = [[['dollar'], ['asterisk'], ['caret']]];
-    expect(data_get(array, '0.2.0')).toBe('caret');
-    expect(data_get(array, '0.1.0')).toBe('asterisk');
-    expect(data_get(array, '0.0.0')).toBe('dollar');
+    array = {
+        numericKeys: ['first', 'second', 'last'],
+        stringKeys: {
+            one: 'first',
+            two: 'second',
+            three: 'last',
+        },
+    };
 
-    let data: any[] = ['bar'];
-    expect(data_get(data, '*')).toEqual(['bar']);
+    expect(data_get(array, 'numericKeys.0')).toEqual('first');
+    expect(data_get(array, 'numericKeys.{first}')).toEqual('first');
+    expect(data_get(array, 'numericKeys.{last}')).toEqual('last');
+    expect(data_get(array, 'stringKeys.{first}')).toEqual('first');
+    expect(data_get(array, 'stringKeys.{last}')).toEqual('last');
 
-    data = ['bar'];
-    expect(data_get(data, undefined)).toEqual(['bar']);
-    expect(data_get(data, undefined, '42')).toEqual(['bar']);
+    array = {
+        symbols: {
+            '{last}': { description: 'dollar' },
+            '*': { description: 'asterisk' },
+            '{first}': { description: 'caret' },
+        },
+    };
+
+    expect(data_get(array, 'symbols.\\{first}.description')).toEqual('caret');
+    expect(data_get(array, 'symbols.{first}.description')).toEqual('dollar');
+    expect(data_get(array, 'symbols.\\*.description')).toEqual('asterisk');
+    expect(data_get(array, 'symbols.*.description')).toEqual({ 0: 'dollar', 1: 'asterisk', 2: 'caret' });
+    expect(data_get(array, 'symbols.\\{last}.description')).toEqual('dollar');
+    expect(data_get(array, 'symbols.{last}.description')).toEqual('caret');
+
+    let data: any = { foo: 'bar' };
+
+    expect(data_get(data, '*')).toEqual({ 0: 'bar' });
+
+    data = { foo: 'bar' };
+
+    expect(data_get(data, undefined)).toEqual({ foo: 'bar' });
+    expect(data_get(data, undefined, '42')).toEqual({ foo: 'bar' });
+
+    data = { foo: 'bar', baz: 42 };
+
+    expect(data_get(data, ['foo'])).toEqual('bar');
 });
 
 test('data_set', () => {
-    let data: any[] = ['bar'];
-    expect(data_set(data, 1, 'boom')).toEqual(['bar', 'boom']);
-    expect(data_set(data, 1, 'kaboom')).toEqual(['bar', 'kaboom']);
-    expect(data_set(data, '0.*', 'noop')).toEqual([[], 'kaboom']);
-    expect(data_set(data, '0.0', 'boom')).toEqual([['boom'], 'kaboom']);
-    expect(data_set(data, '1.0', 'boom')).toEqual([['boom'], ['boom']]);
-    expect(data_set(data, '1.0.0.0', 'boom')).toEqual([['boom'], [[['boom']]]]);
+    let data: any = { foo: 'bar' };
 
-    data = ['bar'];
-    expect(data_set(data, '0.*.0', 'noop')).toEqual([[]]);
-    expect(data_set(data, 1, [['original'], []])).toEqual([[], [['original'], []]]);
-    expect(data_set(data, '1.*.0', 'boom')).toEqual([[], [['boom'], ['boom']]]);
-    expect(data_set(data, '1.*', 'overwritten')).toEqual([[], ['overwritten', 'overwritten']]);
+    expect(data_set(data, 'baz', 'boom')).toEqual({ foo: 'bar', baz: 'boom' });
+    expect(data_set(data, 'baz', 'kaboom')).toEqual({ foo: 'bar', baz: 'kaboom' });
+    expect(data_set(data, 'foo.*', 'noop')).toEqual({ foo: {}, baz: 'kaboom' });
+    expect(data_set(data, 'foo.bar', 'boom')).toEqual({ foo: { bar: 'boom' }, baz: 'kaboom' });
+    expect(data_set(data, 'baz.bar', 'boom')).toEqual({ foo: { bar: 'boom' }, baz: { bar: 'boom' } });
+    expect(data_set(data, 'baz.bar.boom.kaboom', 'boom')).toEqual({
+        foo: { bar: 'boom' },
+        baz: { bar: { boom: { kaboom: 'boom' } } },
+    });
 
-    data = [[[[['First'], []]], [[[], ['Second']]]]];
-    data_set(data, '0.*.0.*.0', 'Filled');
-    expect(data).toEqual([[[[['Filled'], ['Filled']]], [[['Filled'], ['Filled']]]]]);
+    data = { foo: 'bar' };
+
+    expect(data_set(data, 'foo.*.bar', 'noop')).toEqual({ foo: {} });
+    expect(data_set(data, 'bar', [{ baz: 'original' }, {}])).toEqual({ foo: {}, bar: [{ baz: 'original' }, {}] });
+    expect(data_set(data, 'bar.*.baz', 'boom')).toEqual({ foo: {}, bar: [{ baz: 'boom' }, { baz: 'boom' }] });
+    expect(data_set(data, 'bar.*', 'overwritten')).toEqual({ foo: {}, bar: ['overwritten', 'overwritten'] });
+
+    data = {
+        posts: [
+            {
+                comments: [{ name: 'First' }, {}],
+            },
+            {
+                comments: [{}, { name: 'Second' }],
+            },
+        ],
+    };
+
+    expect(data_set(data, 'posts.*.comments.*.name', 'Filled')).toEqual({
+        posts: [
+            {
+                comments: [{ name: 'Filled' }, { name: 'Filled' }],
+            },
+            {
+                comments: [{ name: 'Filled' }, { name: 'Filled' }],
+            },
+        ],
+    });
 });
 
 test('head', () => {
     const array = ['a', 'b', 'c'];
+
     expect(head(array)).toBe('a');
 });
 
 test('last', () => {
     const array = ['a', 'b', 'c'];
+
     expect(last(array)).toBe('c');
 });
 
 test('value', () => {
     const callable = (args: any) => args;
+
     expect(value(callable, 'foo')).toBe('foo');
     expect(value('foo')).toBe('foo');
     expect(value(() => 'foo')).toBe('foo');
