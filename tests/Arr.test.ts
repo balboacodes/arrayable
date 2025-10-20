@@ -221,36 +221,30 @@ test('testUndot', () => {
     expect(array).toEqual({ 0: 'foo', foo: { bar: 'baz', baz: { a: 'b' } } });
 });
 
-// test("testExcept", () => {
-//     array = {name: "taylor", age: 26};
-//     expect(Arr.except(array, ["name"])).toEqual({age: 26});
-//     expect(Arr.except(array, "name")).toEqual({age: 26});
+test('testExcept', () => {
+    let array: any = { name: 'taylor', age: 26 };
+    expect(Arr.except(array, ['name'])).toEqual({ age: 26 });
+    expect(Arr.except(array, 'name')).toEqual({ age: 26 });
 
-//     array = {name: "taylor", framework: [language: "PHP", name: "Laravel"}];
-//     expect(Arr.except(array, "framework")).toEqual({name: "taylor"});
-//     assertEquals(
-//         {name: "taylor", framework: [name: "Laravel"}],
-//         Arr.except(array, "framework.language"),
-//     );
-//     expect(Arr.except(array, ["name", "framework.name"])).toEqual({framework: [language: "PHP"}]);
+    array = { name: 'taylor', framework: { language: 'PHP', name: 'Laravel' } };
+    expect(Arr.except(array, 'framework')).toEqual({ name: 'taylor' });
+    expect(Arr.except(array, 'framework.language')).toEqual({ name: 'taylor', framework: { name: 'Laravel' } });
+    expect(Arr.except(array, ['name', 'framework.name'])).toEqual({ framework: { language: 'PHP' } });
 
-//     array = [1 => "hAz", 2 => [5 => "foo", 12 => "baz"]];
-//     expect(Arr.except(array, 2)).toEqual([1 => "hAz"]);
-//     expect(2 => [12 => "baz"]], Arr.except(array, 2.5)).toEqual([1 => "hAz");
-// }
+    array = { 1: 'hAz', 2: { 5: 'foo', 12: 'baz' } };
+    expect(Arr.except(array, 2)).toEqual({ 1: 'hAz' });
+    expect(Arr.except(array, '2.5')).toEqual({ 1: 'hAz', 2: { 12: 'baz' } });
+});
 
-// test("testExists", () => {
-//     expect(Arr.exists([1], 0)).toEqual(true);
-//     expect(Arr.exists([null], 0)).toEqual(true);
-//     expect(Arr.exists({a: 1}, "a")).toEqual(true);
-//     expect(Arr.exists({a: null}, "a")).toEqual(true);
-//     expect(Arr.exists(new Collection({a: null}), "a")).toEqual(true);
-
-//     expect(Arr.exists([1], 1)).toEqual(false);
-//     expect(Arr.exists([null], 1)).toEqual(false);
-//     expect(Arr.exists({a: 1}, 0)).toEqual(false);
-//     expect(Arr.exists(new Collection({a: null}), "b")).toEqual(false);
-// }
+test('testExists', () => {
+    expect(Arr.exists([1], 0)).toEqual(true);
+    expect(Arr.exists([null], 0)).toEqual(true);
+    expect(Arr.exists({ a: 1 }, 'a')).toEqual(true);
+    expect(Arr.exists({ a: null }, 'a')).toEqual(true);
+    expect(Arr.exists([1], 1)).toEqual(false);
+    expect(Arr.exists([null], 1)).toEqual(false);
+    expect(Arr.exists({ a: 1 }, 0)).toEqual(false);
+});
 
 // test("testWhereNotNull", () => {
 //     array = array_values(Arr.whereNotNull([null, 0, false, "", null, []]));
@@ -278,7 +272,7 @@ test('testUndot', () => {
 //         ]),
 //     );
 //     expect("string", 0.0, false, [], $class, $function], array).toEqual([1);
-// }
+// })
 
 // test("testFirst", () => {
 //     array = [100, 200, 300];
@@ -336,7 +330,7 @@ test('testUndot', () => {
 //         }
 //     })();
 //     expect(Arr.first($cursor)).toEqualNull();
-// }
+// })
 
 // test("testJoin", () => {
 //     expect(b, c", Arr.join(["a", "b", "c"], ", ")).toEqual("a);
@@ -348,7 +342,7 @@ test('testUndot', () => {
 //     expect(Arr.join(["a"], ", ", " and ")).toEqual("a");
 
 //     expect(Arr.join([], ", ", " and ")).toEqual("");
-// }
+// })
 
 // test("testLast", () => {
 //     array = [100, 200, 300];
@@ -399,7 +393,7 @@ test('testUndot', () => {
 //     expect($value3).toEqual("bar");
 //     expect($value4).toEqual("baz");
 //     expect($value5).toEqual(200);
-// }
+// })
 
 // test("testFlatten", () => {
 //     // Flat arrays are unaffected
@@ -437,7 +431,7 @@ test('testUndot', () => {
 //     // Nested arrays containing arrays containing arrays are flattened
 //     array = [["#foo", new Collection(["#bar", ["#zap"]])], ["#baz"]];
 //     expect("#bar", "#zap", "#baz"], Arr.flatten(array)).toEqual(["#foo");
-// }
+// })
 
 // test("testFlattenWithDepth", () => {
 //     // No depth flattens recursively
@@ -450,7 +444,7 @@ test('testUndot', () => {
 
 //     array = [["#foo", ["#bar", ["#baz"]]], "#zap"];
 //     expect("#bar", ["#baz"], "#zap"], Arr.flatten(array, 2)).toEqual(["#foo");
-// }
+// })
 
 // test("testGet", () => {
 //     array = {products.desk: [price: 100}];
@@ -537,7 +531,7 @@ test('testUndot', () => {
 //     // Test array has a null key
 //     expect(Arr.get(["" => "bar"], "")).toEqual("bar");
 //     expect(Arr.get({"" => ["" => "bar"}], ".")).toEqual("bar");
-// }
+// })
 
 // test("testItGetsAString", () => {
 //     $test_array = {string: "foo bar", integer: 1234};
@@ -552,7 +546,7 @@ test('testUndot', () => {
 //     expectException(InvalidArgumentException::class);
 //     expectExceptionMessageMatches("#^Array value for key \[integer\] must be a string, (.*) found.#");
 //     Arr.string($test_array, "integer");
-// }
+// })
 
 // test("testItGetsAnInteger", () => {
 //     $test_array = {string: "foo bar", integer: 1234};
@@ -567,7 +561,7 @@ test('testUndot', () => {
 //     expectException(InvalidArgumentException::class);
 //     expectExceptionMessageMatches("#^Array value for key \[string\] must be an integer, (.*) found.#");
 //     Arr.integer($test_array, "string");
-// }
+// })
 
 // test("testItGetsAFloat", () => {
 //     $test_array = {string: "foo bar", float: 12.34};
@@ -582,7 +576,7 @@ test('testUndot', () => {
 //     expectException(InvalidArgumentException::class);
 //     expectExceptionMessageMatches("#^Array value for key \[string\] must be a float, (.*) found.#");
 //     Arr.float($test_array, "string");
-// }
+// })
 
 // test("testItGetsABoolean", () => {
 //     $test_array = {string: "foo bar", boolean: true};
@@ -597,7 +591,7 @@ test('testUndot', () => {
 //     expectException(InvalidArgumentException::class);
 //     expectExceptionMessageMatches("#^Array value for key \[string\] must be a boolean, (.*) found.#");
 //     Arr.boolean($test_array, "string");
-// }
+// })
 
 // test("testItGetsAnArray", () => {
 //     $test_array = {string: "foo bar", array: ["foo", "bar"}];
@@ -612,7 +606,7 @@ test('testUndot', () => {
 //     expectException(InvalidArgumentException::class);
 //     expectExceptionMessageMatches("#^Array value for key \[string\] must be an array, (.*) found.#");
 //     Arr.array($test_array, "string");
-// }
+// })
 
 // test("testHas", () => {
 //     array = {products.desk: [price: 100}];
@@ -672,7 +666,7 @@ test('testUndot', () => {
 //     expect(Arr.has([""], "")).toEqual(false);
 //     expect(Arr.has([], "")).toEqual(false);
 //     expect(Arr.has([], [""])).toEqual(false);
-// }
+// })
 
 // test("testHasAllMethod", () => {
 //     array = {name: "Taylor", age: "", city: null};
@@ -694,7 +688,7 @@ test('testUndot', () => {
 //     expect(Arr.hasAll(array, "baz")).toEqual(false);
 //     expect(Arr.hasAll(array, "bah")).toEqual(false);
 //     expect(Arr.hasAll(array, ["foo", "bar", "baz", "bar"])).toEqual(false);
-// }
+// })
 
 // test("testHasAnyMethod", () => {
 //     array = {name: "Taylor", age: "", city: null};
@@ -715,19 +709,19 @@ test('testUndot', () => {
 //     expect(Arr.hasAny(array, "foo.baz")).toEqual(true);
 //     expect(Arr.hasAny(array, "foo.bax")).toEqual(false);
 //     expect(Arr.hasAny(array, ["foo.bax", "foo.baz"])).toEqual(true);
-// }
+// })
 
 // test("testEvery", () => {
 //     expect(Arr.every([1, 2], fn($value, $key) => is_string($value))).toEqual(false);
 //     expect(Arr.every(["foo", 2], fn($value, $key) => is_string($value))).toEqual(false);
 //     expect(Arr.every(["foo", "bar"], fn($value, $key) => is_string($value))).toEqual(true);
-// }
+// })
 
 // test("testSome", () => {
 //     expect(Arr.some([1, 2], fn($value, $key) => is_string($value))).toEqual(false);
 //     expect(Arr.some(["foo", 2], fn($value, $key) => is_string($value))).toEqual(true);
 //     expect(Arr.some(["foo", "bar"], fn($value, $key) => is_string($value))).toEqual(true);
-// }
+// })
 
 // test("testIsAssoc", () => {
 //     expect(Arr.isAssoc({a: "a", 0 => "b"})).toEqual(true);
@@ -745,7 +739,7 @@ test('testUndot', () => {
 //     expect(Arr.isAssoc([0 => "foo", "bar" => "baz"])).toEqual(true);
 //     expect(Arr.isAssoc([0 => "foo", 2 => "bar"])).toEqual(true);
 //     expect(Arr.isAssoc({foo: "bar", baz: "qux"})).toEqual(true);
-// }
+// })
 
 // test("testIsList", () => {
 //     expect(Arr.isList([])).toEqual(true);
@@ -762,7 +756,7 @@ test('testUndot', () => {
 //     expect(Arr.isList([0 => "foo", "bar" => "baz"])).toEqual(false);
 //     expect(Arr.isList([0 => "foo", 2 => "bar"])).toEqual(false);
 //     expect(Arr.isList({foo: "bar", baz: "qux"})).toEqual(false);
-// }
+// })
 
 // test("testOnly", () => {
 //     array = {name: "Desk", price: 100, orders: 10};
@@ -780,7 +774,7 @@ test('testUndot', () => {
 //     // Test with array having numeric key and string key
 //     expect(Arr.only(["foo", bar: "baz"}, 0)).toEqual({"foo"]);
 //     expect(Arr.only({"foo", bar: "baz"}, "bar")).toEqual({bar: "baz"});
-// }
+// })
 
 // test("testPluck", () => {
 //     data = {
@@ -817,13 +811,13 @@ test('testUndot', () => {
 //     array = Arr.pluck(array, "developer.name");
 
 //     expect("Abigail"], array).toEqual(["Taylor");
-// }
+// })
 
 // test("testPluckWithArrayValue", () => {
 //     array = [{developer: [name: "Taylor"}], {developer: [name: "Abigail"}]];
 //     array = Arr.pluck(array, ["developer", "name"]);
 //     expect("Abigail"], array).toEqual(["Taylor");
-// }
+// })
 
 // test("testPluckWithKeys", () => {
 //     array = [{name: "Taylor", role: "developer"}, {name: "Abigail", role: "developer"}];
@@ -846,19 +840,19 @@ test('testUndot', () => {
 //         ],
 //         $test2,
 //     );
-// }
+// })
 
 // test("testPluckWithCarbonKeys", () => {
 //     array = [{start: new Carbon("2017-07-25 00:00:00"), end: new Carbon("2017-07-30 00:00:00")}];
 //     array = Arr.pluck(array, "end", "start");
 //     expect(array).toEqual({2017-07-25 00:00:00: "2017-07-30 00:00:00"});
-// }
+// })
 
 // test("testArrayPluckWithArrayAndObjectValues", () => {
 //     array = [ {name: "taylor", email: "foo"}, {name: "dayle", email: "bar"}];
 //     expect("dayle"], Arr.pluck(array, "name")).toEqual(["taylor");
 //     expect(dayle: "bar"}, Arr.pluck(array, "email", "name")).toEqual({taylor: "foo");
-// }
+// })
 
 // test("testArrayPluckWithNestedKeys", () => {
 //     array = [{user: ["taylor", "otwell"}], {user: ["dayle", "rees"}]];
@@ -866,7 +860,7 @@ test('testUndot', () => {
 //     expect("dayle"], Arr.pluck(array, ["user", 0])).toEqual(["taylor");
 //     expect(dayle: "rees"}, Arr.pluck(array, "user.1", "user.0")).toEqual({taylor: "otwell");
 //     expect(dayle: "rees"}, Arr.pluck(array, ["user", 1], ["user", 0])).toEqual({taylor: "otwell");
-// }
+// })
 
 // test("testArrayPluckWithNestedArrays", () => {
 //     array = [
@@ -886,7 +880,7 @@ test('testUndot', () => {
 //         Arr.pluck(array, "users.*.first", "account"),
 //     );
 //     expect([null, null]], Arr.pluck(array, "users.*.email")).toEqual([["taylorotwell@gmail.com"]);
-// }
+// })
 
 // test("testMap", () => {
 //     data = {first: "taylor", last: "otwell"};
@@ -895,14 +889,14 @@ test('testUndot', () => {
 //     });
 //     expect(last: "last-llewto"}, $mapped).toEqual({first: "first-rolyat");
 //     expect(last: "otwell"}, data).toEqual({first: "taylor");
-// }
+// })
 
 // test("testMapWithEmptyArray", () => {
 //     $mapped = Arr.map([], static function ($value, $key) {
 //         return $key . "-" . $value;
 //     });
 //     expect($mapped).toEqual([]);
-// }
+// })
 
 // test("testMapNullValues", () => {
 //     data = {first: "taylor", last: null};
@@ -910,7 +904,7 @@ test('testUndot', () => {
 //         return $key . "-" . $value;
 //     });
 //     expect(last: "last-"}, $mapped).toEqual({first: "first-taylor");
-// }
+// })
 
 // test("testMapWithKeys", () => {
 //     data = [
@@ -924,7 +918,7 @@ test('testUndot', () => {
 //     });
 
 //     expect(Charmander: "Fire", Dragonair: "Dragon"}, data).toEqual({Blastoise: "Water");
-// }
+// })
 
 // test("testMapByReference", () => {
 //     data = {first: "taylor", last: "otwell"};
@@ -932,7 +926,7 @@ test('testUndot', () => {
 
 //     expect(last: "llewto"}, $mapped).toEqual({first: "rolyat");
 //     expect(last: "otwell"}, data).toEqual({first: "taylor");
-// }
+// })
 
 // test("testMapSpread", () => {
 //     $c = [[1, "a"], [2, "b"]];
@@ -946,7 +940,7 @@ test('testUndot', () => {
 //         return "{$number}-{$character}-{$key}";
 //     });
 //     expect("2-b-1"], $result).toEqual(["1-a-0");
-// }
+// })
 
 // test("testPrepend", () => {
 //     array = Arr.prepend(["one", "two", "three", "four"], "zero");
@@ -972,7 +966,7 @@ test('testUndot', () => {
 
 //     array = Arr.prepend(["one", "two"], ["zero"], "key");
 //     expect("one", "two"], array).toEqual({key: ["zero"});
-// }
+// })
 
 // test("testPull", () => {
 //     array = {name: "Desk", price: 100};
@@ -997,7 +991,7 @@ test('testUndot', () => {
 //     $first = Arr.pull(array, 0);
 //     expect($first).toEqual("First");
 //     expect(array).toEqual([1 => "Second"]);
-// }
+// })
 
 // test("testQuery", () => {
 //     expect(Arr.query([])).toEqual("");
@@ -1006,7 +1000,7 @@ test('testUndot', () => {
 //     expect(Arr.query({foo: "bar", bar: true})).toEqual("foo=bar&bar=1");
 //     expect(Arr.query({foo: "bar", bar: null})).toEqual("foo=bar");
 //     expect(Arr.query({foo: "bar", bar: ""})).toEqual("foo=bar&bar=");
-// }
+// })
 
 // test("testRandom", () => {
 //     $random = Arr.random(["foo", "bar", "baz"]);
@@ -1047,12 +1041,12 @@ test('testUndot', () => {
 //     assertIsArray($random);
 //     assertCount(2, $random);
 //     assertCount(2, array_intersect_assoc({one: "foo", two: "bar", three: "baz"}, $random));
-// }
+// })
 
 // test("testRandomNotIncrementingKeys", () => {
 //     $random = Arr.random({foo: "foo", bar: "bar", baz: "baz"});
 //     assertContains($random, ["foo", "bar", "baz"]);
-// }
+// })
 
 // test("testRandomOnEmptyArray", () => {
 //     $random = Arr.random([], 0);
@@ -1062,7 +1056,7 @@ test('testUndot', () => {
 //     $random = Arr.random([], "0");
 //     assertIsArray($random);
 //     assertCount(0, $random);
-// }
+// })
 
 // test("testRandomThrowsAnErrorWhenRequestingMoreItemsThanAreAvailable", () => {
 //     $exceptions = 0;
@@ -1086,7 +1080,7 @@ test('testUndot', () => {
 //     }
 
 //     expect($exceptions).toEqual(3);
-// }
+// })
 
 // test("testSet", () => {
 //     array = {products: [desk: [price: 100}]];
@@ -1127,7 +1121,7 @@ test('testUndot', () => {
 
 //     array = [1 => "test"];
 //     expect(Arr.set(array, 1, "hAz")).toEqual([1 => "hAz"]);
-// }
+// })
 
 // test("testShuffleProducesDifferentShuffles", () => {
 //     $input = range("a", "z");
@@ -1136,7 +1130,7 @@ test('testUndot', () => {
 //         Arr.shuffle($input) === Arr.shuffle($input) && Arr.shuffle($input) === Arr.shuffle($input),
 //         "The shuffles produced the same output each time, which shouldn't happen.",
 //     );
-// }
+// })
 
 // test("testShuffleActuallyShuffles", () => {
 //     $input = range("a", "z");
@@ -1145,7 +1139,7 @@ test('testUndot', () => {
 //         Arr.shuffle($input) === $input && Arr.shuffle($input) === $input,
 //         "The shuffles were unshuffled each time, which shouldn't happen.",
 //     );
-// }
+// })
 
 // test("testShuffleKeepsSameValues", () => {
 //     $input = range("a", "z");
@@ -1153,7 +1147,7 @@ test('testUndot', () => {
 //     sort($shuffled);
 
 //     expect($shuffled).toEqual($input);
-// }
+// })
 
 // test("testSoleReturnsFirstItemInCollectionIfOnlyOneExists", () => {
 //     expect(Arr.sole(["foo"])).toEqual("foo");
@@ -1161,23 +1155,23 @@ test('testUndot', () => {
 //     array = [{name: "foo"}, {name: "bar"}];
 
 //     expect(Arr.sole(array, fn(array $value) => $value["name"] === "foo")).toEqual({name: "foo"});
-// }
+// })
 
 // test("testSoleThrowsExceptionIfNoItemsExist", () => {
 //     expectException(ItemNotFoundException::class);
 
 //     Arr.sole(["foo"], fn(string $value) => $value === "baz");
-// }
+// })
 
 // test("testSoleThrowsExceptionIfMoreThanOneItemExists", () => {
 //     expectExceptionObject(new MultipleItemsFoundException(2));
 
 //     Arr.sole(["baz", "foo", "baz"], fn(string $value) => $value === "baz");
-// }
+// })
 
 // test("testEmptyShuffle", () => {
 //     expect(Arr.shuffle([])).toEqual([]);
-// }
+// })
 
 // test("testSort", () => {
 //     $unsorted = [{name: "Desk"}, {name: "Chair"}];
@@ -1198,7 +1192,7 @@ test('testUndot', () => {
 //     // sort with dot notation
 //     $sortedWithDotNotation = array_values(Arr.sort($unsorted, "name"));
 //     expect($sortedWithDotNotation).toEqual($expected);
-// }
+// })
 
 // test("testSortDesc", () => {
 //     $unsorted = [{name: "Chair"}, {name: "Desk"}];
@@ -1219,7 +1213,7 @@ test('testUndot', () => {
 //     // sort with dot notation
 //     $sortedWithDotNotation = array_values(Arr.sortDesc($unsorted, "name"));
 //     expect($sortedWithDotNotation).toEqual($expected);
-// }
+// })
 
 // test("testSortRecursive", () => {
 //     array = {
@@ -1273,7 +1267,7 @@ test('testUndot', () => {
 //     ];
 
 //     expect(Arr.sortRecursive(array)).toEqual($expect);
-// }
+// })
 
 // test("testSortRecursiveDesc", () => {
 //     array = {
@@ -1327,7 +1321,7 @@ test('testUndot', () => {
 //     ];
 
 //     expect(Arr.sortRecursiveDesc(array)).toEqual($expect);
-// }
+// })
 
 // test("testToCssClasses", () => {
 //     $classes = Arr.toCssClasses(["font-bold", "mt-4"]);
@@ -1337,7 +1331,7 @@ test('testUndot', () => {
 //     $classes = Arr.toCssClasses({"font-bold", "mt-4", ml-2: true, mr-2: false});
 
 //     expect($classes).toEqual("font-bold mt-4 ml-2");
-// }
+// })
 
 // test("testToCssStyles", () => {
 //     $styles = Arr.toCssStyles(["font-weight: bold", "margin-top: 4px;"]);
@@ -1352,7 +1346,7 @@ test('testUndot', () => {
 //     ]);
 
 //     expect($styles).toEqual("font-weight: bold; margin-top: 4px; margin-left: 2px;");
-// }
+// })
 
 // test("testWhere", () => {
 //     array = [100, "200", 300, "400", 500];
@@ -1362,7 +1356,7 @@ test('testUndot', () => {
 //     });
 
 //     expect(3 => "400"], array).toEqual([1 => "200");
-// }
+// })
 
 // test("testWhereKey", () => {
 //     array = {10: 1, foo: 3, 20 => 2};
@@ -1372,7 +1366,7 @@ test('testUndot', () => {
 //     });
 
 //     expect(20 => 2}, array).toEqual({10: 1);
-// }
+// })
 
 // test("testForget", () => {
 //     array = {products: [desk: [price: 100}]];
@@ -1428,7 +1422,7 @@ test('testUndot', () => {
 //     array = [2 => [1 => "products", 3 => "users"]];
 //     Arr.forget(array, 2.3);
 //     expect(array).toEqual([2 => [1 => "products"]]);
-// }
+// })
 
 // test("testFrom", () => {
 //     expect(Arr.from({foo: "bar"})).toEqual({foo: "bar"});
@@ -1453,7 +1447,7 @@ test('testUndot', () => {
 //     expectException(InvalidArgumentException::class);
 //     // expect exception message: "Items cannot be represented by a scalar value."
 //     Arr.from(123);
-// }
+// })
 
 // test("testWrap", () => {
 //     $string = "a";
@@ -1477,7 +1471,7 @@ test('testUndot', () => {
 //     $obj = unserialize(serialize($obj));
 //     expect(Arr.wrap($obj)).toEqual([$obj]);
 //     expect(Arr.wrap($obj)[0]).toEqual($obj);
-// }
+// })
 
 // test("testSortByMany", () => {
 //     $unsorted = [
@@ -1532,7 +1526,7 @@ test('testUndot', () => {
 //         ],
 //         $sortedWithCallable,
 //     );
-// }
+// })
 
 // test("testKeyBy", () => {
 //     array = [{id: "123", data: "abc"}, {id: "345", data: "def"}, {id: "498", data: "hgi"}];
@@ -1545,7 +1539,7 @@ test('testUndot', () => {
 //         ],
 //         Arr.keyBy(array, "id"),
 //     );
-// }
+// })
 
 // test("testPrependKeysWith", () => {
 //     array = {
@@ -1568,7 +1562,7 @@ test('testUndot', () => {
 //         ],
 //         Arr.prependKeysWith(array, "test."),
 //     );
-// }
+// })
 
 // test("testTake", () => {
 //     array = [1, 2, 3, 4, 5, 6];
@@ -1587,7 +1581,7 @@ test('testUndot', () => {
 
 //     // Test with a negative limit greater than the array size, should return the entire array.
 //     expect(2, 3, 4, 5, 6], Arr.take(array, -10)).toEqual([1);
-// }
+// })
 
 // test("testSelect", () => {
 //     array = [
@@ -1632,7 +1626,7 @@ test('testUndot', () => {
 //     expect([]], Arr.select(array, "nonExistingKey")).toEqual([[]);
 
 //     expect([]], Arr.select(array, null)).toEqual([[]);
-// }
+// })
 
 // test("testReject", () => {
 //     array = [1, 2, 3, 4, 5, 6];
@@ -1665,7 +1659,7 @@ test('testUndot', () => {
 //         },
 //         $result,
 //     );
-// }
+// })
 
 // test("testPartition", () => {
 //     array = ["John", "Jane", "Greg"];
