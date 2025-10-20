@@ -17,8 +17,6 @@ export class Arr {
     /**
      * Add an element to an array using "dot" notation if it doesn't exist.
      */
-    public static add<T>(array: T[], key: number | string, value: any): T[];
-    public static add<T>(array: Record<string, T>, key: number | string, value: any): Record<string, T>;
     public static add<T>(array: T[] | Record<string, T>, key: number | string, value: any): T[] | Record<string, T> {
         if (Arr.get(array, key) === undefined) {
             Arr.set(array, key, value);
@@ -103,10 +101,31 @@ export class Arr {
     /**
      * Divide an array into two arrays. One with keys and the other with values.
      */
-    public static divide<T>(array: T[]): [number[], T[]];
-    public static divide<T>(array: Record<string, T>): [string[], T[]];
     public static divide<T>(array: T[] | Record<string, T>): [(number | string)[], T[]] {
         return [array_keys(array as any), array_values(array)];
+    }
+
+    /**
+     * Flatten a multi-dimensional associative array with dots.
+     */
+    public static dot(array: Record<string, any>, prepend: string = ''): Record<string, any> {
+        const results: Record<string, any> = {};
+
+        const flatten = (data: any[] | Record<string, any>, prefix: string): void => {
+            for (const [key, value] of Object.entries(data)) {
+                const newKey = prefix + key;
+
+                if (Arr.accessible(value) && !empty(value)) {
+                    flatten(value, newKey + '.');
+                } else {
+                    (results as any)[newKey] = value;
+                }
+            }
+        };
+
+        flatten(array, prepend);
+
+        return results;
     }
 
     /**
@@ -642,8 +661,8 @@ export class Arr {
             // If the key doesn't exist at this depth, we will just create an empty array
             // to hold the next value, allowing us to create the arrays to hold final
             // values at the correct depth. Then we'll keep digging into the array.
-            if (!isset((current as any)[key]) || !Array.isArray((current as any)[key])) {
-                (current as any)[key] = [];
+            if (!isset((current as any)[key]) || !Arr.accessible((current as any)[key])) {
+                (current as any)[key] = Array.isArray(current) ? [] : {};
             }
 
             current = (current as any)[key];
@@ -776,6 +795,19 @@ export class Arr {
         }
 
         return implode(' ', styles);
+    }
+
+    /**
+     * Convert a flatten "dot" notation array into an expanded array.
+     */
+    public static undot(array: Record<string, any>): Record<string, any> {
+        const results: Record<string, any> = {};
+
+        for (const [key, value] of Object.entries(array)) {
+            Arr.set(results, key, value);
+        }
+
+        return results;
     }
 
     /**
