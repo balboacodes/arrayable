@@ -1,5 +1,6 @@
 import { expect, test } from 'vitest';
 import { Arr } from '../src/Arr';
+import { array_values } from '@balboacodes/php-utils';
 
 test('accessible', () => {
     expect(Arr.accessible([])).toEqual(true);
@@ -246,292 +247,167 @@ test('testExists', () => {
     expect(Arr.exists({ a: 1 }, 0)).toEqual(false);
 });
 
-// test("testWhereNotNull", () => {
-//     array = array_values(Arr.whereNotNull([null, 0, false, "", null, []]));
-//     expect(false, "", []], array).toEqual([0);
+test('testWhereNotUndefined', () => {
+    let array = array_values(Arr.whereNotUndefined([undefined, 0, false, '', undefined, []]));
+    expect(array).toEqual([0, false, '', []]);
 
-//     array = array_values(Arr.whereNotNull([1, 2, 3]));
-//     expect(2, 3], array).toEqual([1);
+    array = array_values(Arr.whereNotUndefined([1, 2, 3]));
+    expect(array).toEqual([1, 2, 3]);
 
-//     array = array_values(Arr.whereNotNull([null, null, null]));
-//     expect(array).toEqual([]);
+    array = array_values(Arr.whereNotUndefined([undefined, undefined, undefined]));
+    expect(array).toEqual([]);
 
-//     array = array_values(Arr.whereNotNull(["a", null, "b", null, "c"]));
-//     expect("b", "c"], array).toEqual(["a");
+    array = array_values(Arr.whereNotUndefined(['a', undefined, 'b', undefined, 'c']));
+    expect(array).toEqual(['a', 'b', 'c']);
 
-//     array = array_values(
-//         Arr.whereNotNull([
-//             null,
-//             1,
-//             "string",
-//             0.0,
-//             false,
-//             [],
-//             ($class = {}),
-//             ($function = fn() => null),
-//         ]),
-//     );
-//     expect("string", 0.0, false, [], $class, $function], array).toEqual([1);
-// })
+    const obj = {};
+    const fun = () => undefined;
+    array = array_values(Arr.whereNotUndefined([undefined, 1, 'string', 0.0, false, [], obj, fun]));
+    expect(array).toEqual([1, 'string', 0.0, false, [], obj, fun]);
+});
 
-// test("testFirst", () => {
-//     array = [100, 200, 300];
+test('testFirst', () => {
+    const array = [100, 200, 300];
 
-//     // Callback is null and array is empty
-//     expect(Arr.first([], null)).toEqualNull();
-//     expect(Arr.first([], null, "foo")).toEqual("foo");
-//     assertSame(
-//         "bar",
-//         Arr.first([], null, function () {
-//             return "bar";
-//         }),
-//     );
+    // Callback is undefined and array is empty
+    expect(Arr.first([], undefined)).toEqual(undefined);
+    expect(Arr.first([], undefined, 'foo')).toEqual('foo');
+    expect(Arr.first([], undefined, () => 'bar')).toEqual('bar');
 
-//     // Callback is null and array is not empty
-//     expect(Arr.first(array)).toEqual(100);
+    // Callback is undefined and array is not empty
+    expect(Arr.first(array)).toEqual(100);
 
-//     // Callback is not null and array is not empty
-//     $value = Arr.first(array, function ($value) {
-//         return $value >= 150;
-//     });
-//     expect($value).toEqual(200);
+    // Callback is not undefined and array is not empty
+    const value = Arr.first(array, (value) => value >= 150);
+    expect(value).toEqual(200);
 
-//     // Callback is not null, array is not empty but no satisfied item
-//     $value2 = Arr.first(array, function ($value) {
-//         return $value > 300;
-//     });
-//     $value3 = Arr.first(
-//         array,
-//         function ($value) {
-//             return $value > 300;
-//         },
-//         "bar",
-//     );
-//     $value4 = Arr.first(
-//         array,
-//         function ($value) {
-//             return $value > 300;
-//         },
-//         function () {
-//             return "baz";
-//         },
-//     );
-//     $value5 = Arr.first(array, function ($value, $key) {
-//         return $key < 2;
-//     });
-//     expect($value2).toEqualNull();
-//     expect($value3).toEqual("bar");
-//     expect($value4).toEqual("baz");
-//     expect($value5).toEqual(100);
+    // Callback is not undefined, array is not empty but no satisfied item
+    const value2 = Arr.first(array, (value) => value > 300);
+    const value3 = Arr.first(array, (value) => value > 300, 'bar');
+    const value4 = Arr.first(
+        array,
+        (value) => value > 300,
+        () => 'baz',
+    );
+    const value5 = Arr.first(array, (_, key) => Number(key) < 2);
+    expect(value2).toEqual(undefined);
+    expect(value3).toEqual('bar');
+    expect(value4).toEqual('baz');
+    expect(value5).toEqual(100);
+});
 
-//     $cursor = (function () {
-//         while (false) {
-//             yield 1;
-//         }
-//     })();
-//     expect(Arr.first($cursor)).toEqualNull();
-// })
+test('testJoin', () => {
+    expect(Arr.join(['a', 'b', 'c'], ', ')).toEqual('a, b, c');
+    expect(Arr.join(['a', 'b', 'c'], ', ', ' and ')).toEqual('a, b and c');
+    expect(Arr.join(['a', 'b'], ', ', ' and ')).toEqual('a and b');
+    expect(Arr.join(['a'], ', ', ' and ')).toEqual('a');
+    expect(Arr.join([], ', ', ' and ')).toEqual('');
+});
 
-// test("testJoin", () => {
-//     expect(b, c", Arr.join(["a", "b", "c"], ", ")).toEqual("a);
+test('testLast', () => {
+    const array = [100, 200, 300];
 
-//     expect(b and c", Arr.join(["a", "b", "c"], ", ", " and ")).toEqual("a);
+    // Callback is undefined and array is empty
+    expect(Arr.last([], undefined)).toEqual(undefined);
+    expect(Arr.last([], undefined, 'foo')).toEqual('foo');
+    expect(Arr.last([], undefined, () => 'bar')).toEqual('bar');
 
-//     expect(Arr.join(["a", "b"], ", ", " and ")).toEqual("a and b");
+    // // Callback is undefined and array is not empty
+    expect(Arr.last(array)).toEqual(300);
 
-//     expect(Arr.join(["a"], ", ", " and ")).toEqual("a");
+    // // Callback is not undefined and array is not empty
+    const value = Arr.last(array, (value) => value < 250);
+    expect(value).toEqual(200);
 
-//     expect(Arr.join([], ", ", " and ")).toEqual("");
-// })
+    // Callback is not undefined, array is not empty but no satisfied item
+    const value2 = Arr.last(array, (value) => value > 300);
+    const value3 = Arr.last(array, (value) => value > 300, 'bar');
+    const value4 = Arr.last(
+        array,
+        (value) => value > 300,
+        () => 'baz',
+    );
+    const value5 = Arr.last(array, (_, key) => Number(key) < 2);
+    expect(value2).toEqual(undefined);
+    expect(value3).toEqual('bar');
+    expect(value4).toEqual('baz');
+    expect(value5).toEqual(300);
+});
 
-// test("testLast", () => {
-//     array = [100, 200, 300];
+test('testFlatten', () => {
+    // Flat arrays are unaffected
+    let array: any = ['#foo', '#bar', '#baz'];
+    expect(Arr.flatten(array)).toEqual(['#foo', '#bar', '#baz']);
 
-//     // Callback is null and array is empty
-//     expect(Arr.last([], null)).toEqualNull();
-//     expect(Arr.last([], null, "foo")).toEqual("foo");
-//     assertSame(
-//         "bar",
-//         Arr.last([], null, function () {
-//             return "bar";
-//         }),
-//     );
+    // Nested arrays are flattened with existing flat items
+    array = [['#foo', '#bar'], '#baz'];
+    expect(Arr.flatten(array)).toEqual(['#foo', '#bar', '#baz']);
 
-//     // Callback is null and array is not empty
-//     expect(Arr.last(array)).toEqual(300);
+    // Flattened array includes "null" items
+    array = [['#foo', null], '#baz', null];
+    expect(Arr.flatten(array)).toEqual(['#foo', null, '#baz', null]);
 
-//     // Callback is not null and array is not empty
-//     $value = Arr.last(array, function ($value) {
-//         return $value < 250;
-//     });
-//     expect($value).toEqual(200);
+    // Sets of nested arrays are flattened
+    array = [['#foo', '#bar'], ['#baz']];
+    expect(Arr.flatten(array)).toEqual(['#foo', '#bar', '#baz']);
 
-//     // Callback is not null, array is not empty but no satisfied item
-//     $value2 = Arr.last(array, function ($value) {
-//         return $value > 300;
-//     });
-//     $value3 = Arr.last(
-//         array,
-//         function ($value) {
-//             return $value > 300;
-//         },
-//         "bar",
-//     );
-//     $value4 = Arr.last(
-//         array,
-//         function ($value) {
-//             return $value > 300;
-//         },
-//         function () {
-//             return "baz";
-//         },
-//     );
-//     $value5 = Arr.last(array, function ($value, $key) {
-//         return $key < 2;
-//     });
-//     expect($value2).toEqualNull();
-//     expect($value3).toEqual("bar");
-//     expect($value4).toEqual("baz");
-//     expect($value5).toEqual(200);
-// })
+    // Deeply nested arrays are flattened
+    array = [['#foo', ['#bar']], ['#baz']];
+    expect(Arr.flatten(array)).toEqual(['#foo', '#bar', '#baz']);
+});
 
-// test("testFlatten", () => {
-//     // Flat arrays are unaffected
-//     array = ["#foo", "#bar", "#baz"];
-//     expect("#bar", "#baz"], Arr.flatten(array)).toEqual(["#foo");
+test('testFlattenWithDepth', () => {
+    // No depth flattens recursively
+    let array = [['#foo', ['#bar', ['#baz']]], '#zap'];
+    expect(Arr.flatten(array)).toEqual(['#foo', '#bar', '#baz', '#zap']);
 
-//     // Nested arrays are flattened with existing flat items
-//     array = [["#foo", "#bar"], "#baz"];
-//     expect("#bar", "#baz"], Arr.flatten(array)).toEqual(["#foo");
+    // Specifying a depth only flattens to that depth
+    array = [['#foo', ['#bar', ['#baz']]], '#zap'];
+    expect(Arr.flatten(array, 1)).toEqual(['#foo', ['#bar', ['#baz']], '#zap']);
 
-//     // Flattened array includes "null" items
-//     array = [["#foo", null], "#baz", null];
-//     expect(null, "#baz", null], Arr.flatten(array)).toEqual(["#foo");
+    array = [['#foo', ['#bar', ['#baz']]], '#zap'];
+    expect(Arr.flatten(array, 2)).toEqual(['#foo', '#bar', ['#baz'], '#zap']);
+});
 
-//     // Sets of nested arrays are flattened
-//     array = [["#foo", "#bar"], ["#baz"]];
-//     expect("#bar", "#baz"], Arr.flatten(array)).toEqual(["#foo");
+test('testGet', () => {
+    let array: any = { 'products.desk': { price: 100 } };
+    expect(Arr.get(array, 'products.desk')).toEqual({ price: 100 });
 
-//     // Deeply nested arrays are flattened
-//     array = [["#foo", ["#bar"]], ["#baz"]];
-//     expect("#bar", "#baz"], Arr.flatten(array)).toEqual(["#foo");
+    array = {
+        products: { desk: { price: 100 } },
+    };
+    let value = Arr.get(array, 'products.desk');
+    expect(value).toEqual({ price: 100 });
 
-//     // Nested arrays are flattened alongside arrays
-//     array = [new Collection(["#foo", "#bar"]), ["#baz"]];
-//     expect("#bar", "#baz"], Arr.flatten(array)).toEqual(["#foo");
+    // Test null array values
+    array = { foo: null, bar: { baz: null } };
+    expect(Arr.get(array, 'foo', 'default')).toEqual(null);
+    expect(Arr.get(array, 'bar.baz', 'default')).toEqual(null);
 
-//     // Nested arrays containing plain arrays are flattened
-//     array = [new Collection(["#foo", ["#bar"]]), ["#baz"]];
-//     expect("#bar", "#baz"], Arr.flatten(array)).toEqual(["#foo");
+    // Test null key returns the whole array
+    array = ['foo', 'bar'];
+    expect(Arr.get(array, undefined)).toEqual(array);
 
-//     // Nested arrays containing arrays are flattened
-//     array = [["#foo", new Collection(["#bar"])], ["#baz"]];
-//     expect("#bar", "#baz"], Arr.flatten(array)).toEqual(["#foo");
+    // Test array is empty and key is undefined
+    expect(Arr.get([], undefined)).toEqual([]);
+    expect(Arr.get([], undefined, 'default')).toEqual([]);
 
-//     // Nested arrays containing arrays containing arrays are flattened
-//     array = [["#foo", new Collection(["#bar", ["#zap"]])], ["#baz"]];
-//     expect("#bar", "#zap", "#baz"], Arr.flatten(array)).toEqual(["#foo");
-// })
+    // Test numeric keys
+    array = {
+        products: [{ name: 'desk' }, { name: 'chair' }],
+    };
+    expect(Arr.get(array, 'products.0.name')).toEqual('desk');
+    expect(Arr.get(array, 'products.1.name')).toEqual('chair');
 
-// test("testFlattenWithDepth", () => {
-//     // No depth flattens recursively
-//     array = [["#foo", ["#bar", ["#baz"]]], "#zap"];
-//     expect("#bar", "#baz", "#zap"], Arr.flatten(array)).toEqual(["#foo");
+    // Test return default value for non-existing key.
+    array = { names: { developer: 'taylor' } };
+    expect(Arr.get(array, 'names.otherDeveloper', 'dayle')).toEqual('dayle');
+    expect(Arr.get(array, 'names.otherDeveloper', () => 'dayle')).toEqual('dayle');
 
-//     // Specifying a depth only flattens to that depth
-//     array = [["#foo", ["#bar", ["#baz"]]], "#zap"];
-//     expect(["#bar", ["#baz"]], "#zap"], Arr.flatten(array, 1)).toEqual(["#foo");
-
-//     array = [["#foo", ["#bar", ["#baz"]]], "#zap"];
-//     expect("#bar", ["#baz"], "#zap"], Arr.flatten(array, 2)).toEqual(["#foo");
-// })
-
-// test("testGet", () => {
-//     array = {products.desk: [price: 100}];
-//     expect(Arr.get(array, "products.desk")).toEqual({price: 100});
-
-//     array = {products: [desk: [price: 100}]];
-//     $value = Arr.get(array, "products.desk");
-//     expect($value).toEqual({price: 100});
-
-//     // Test null array values
-//     array = {foo: null, bar: [baz: null}];
-//     expect(Arr.get(array, "foo", "default")).toEqualNull();
-//     expect(Arr.get(array, "bar.baz", "default")).toEqualNull();
-
-//     // Test direct ArrayAccess object
-//     array = {products: [desk: [price: 100}]];
-//     arrayAccessObject = new ArrayObject(array);
-//     $value = Arr.get(arrayAccessObject, "products.desk");
-//     expect($value).toEqual({price: 100});
-
-//     // Test array containing ArrayAccess object
-//     arrayAccessChild = new ArrayObject({products: [desk: [price: 100}]]);
-//     array = {child: arrayAccessChild};
-//     $value = Arr.get(array, "child.products.desk");
-//     expect($value).toEqual({price: 100});
-
-//     // Test array containing multiple nested ArrayAccess objects
-//     arrayAccessChild = new ArrayObject({products: [desk: [price: 100}]]);
-//     arrayAccessParent = new ArrayObject({child: arrayAccessChild});
-//     array = {parent: arrayAccessParent};
-//     $value = Arr.get(array, "parent.child.products.desk");
-//     expect($value).toEqual({price: 100});
-
-//     // Test missing ArrayAccess object field
-//     arrayAccessChild = new ArrayObject({products: [desk: [price: 100}]]);
-//     arrayAccessParent = new ArrayObject({child: arrayAccessChild});
-//     array = {parent: arrayAccessParent};
-//     $value = Arr.get(array, "parent.child.desk");
-//     expect($value).toEqualNull();
-
-//     // Test missing ArrayAccess object field
-//     arrayAccessObject = new ArrayObject({products: [desk: null}]);
-//     array = {parent: arrayAccessObject};
-//     $value = Arr.get(array, "parent.products.desk.price");
-//     expect($value).toEqualNull();
-
-//     // Test null ArrayAccess object fields
-//     array = new ArrayObject({foo: null, bar: new ArrayObject([baz: null})]);
-//     expect(Arr.get(array, "foo", "default")).toEqualNull();
-//     expect(Arr.get(array, "bar.baz", "default")).toEqualNull();
-
-//     // Test null key returns the whole array
-//     array = ["foo", "bar"];
-//     expect(Arr.get(array, null)).toEqual(array);
-
-//     // Test array not an array
-//     expect(Arr.get(null, "foo", "default")).toEqual("default");
-//     expect(Arr.get(false, "foo", "default")).toEqual("default");
-
-//     // Test array not an array and key is null
-//     expect(Arr.get(null, null, "default")).toEqual("default");
-
-//     // Test array is empty and key is null
-//     assertEmpty(Arr.get([], null));
-//     assertEmpty(Arr.get([], null, "default"));
-
-//     // Test numeric keys
-//     array = {
-//         products: [[name: "desk"}, {name: "chair"}],
-//     ];
-//     expect(Arr.get(array, "products.0.name")).toEqual("desk");
-//     expect(Arr.get(array, "products.1.name")).toEqual("chair");
-
-//     // Test return default value for non-existing key.
-//     array = {names: [developer: "taylor"}];
-//     expect(Arr.get(array, "names.otherDeveloper", "dayle")).toEqual("dayle");
-//     assertSame(
-//         "dayle",
-//         Arr.get(array, "names.otherDeveloper", function () {
-//             return "dayle";
-//         }),
-//     );
-
-//     // Test array has a null key
-//     expect(Arr.get(["" => "bar"], "")).toEqual("bar");
-//     expect(Arr.get({"" => ["" => "bar"}], ".")).toEqual("bar");
-// })
+    // Test array has a null key
+    expect(Arr.get({ '': 'bar' }, '')).toEqual('bar');
+    expect(Arr.get({ '': { '': 'bar' } }, '.')).toEqual('bar');
+});
 
 // test("testItGetsAString", () => {
 //     $test_array = {string: "foo bar", integer: 1234};
@@ -712,15 +588,15 @@ test('testExists', () => {
 // })
 
 // test("testEvery", () => {
-//     expect(Arr.every([1, 2], fn($value, $key) => is_string($value))).toEqual(false);
-//     expect(Arr.every(["foo", 2], fn($value, $key) => is_string($value))).toEqual(false);
-//     expect(Arr.every(["foo", "bar"], fn($value, $key) => is_string($value))).toEqual(true);
+//     expect(Arr.every([1, 2], fn(value, key) => is_string(value))).toEqual(false);
+//     expect(Arr.every(["foo", 2], fn(value, key) => is_string(value))).toEqual(false);
+//     expect(Arr.every(["foo", "bar"], fn(value, key) => is_string(value))).toEqual(true);
 // })
 
 // test("testSome", () => {
-//     expect(Arr.some([1, 2], fn($value, $key) => is_string($value))).toEqual(false);
-//     expect(Arr.some(["foo", 2], fn($value, $key) => is_string($value))).toEqual(true);
-//     expect(Arr.some(["foo", "bar"], fn($value, $key) => is_string($value))).toEqual(true);
+//     expect(Arr.some([1, 2], fn(value, key) => is_string(value))).toEqual(false);
+//     expect(Arr.some(["foo", 2], fn(value, key) => is_string(value))).toEqual(true);
+//     expect(Arr.some(["foo", "bar"], fn(value, key) => is_string(value))).toEqual(true);
 // })
 
 // test("testIsAssoc", () => {
@@ -884,24 +760,24 @@ test('testExists', () => {
 
 // test("testMap", () => {
 //     data = {first: "taylor", last: "otwell"};
-//     $mapped = Arr.map(data, function ($value, $key) {
-//         return $key . "-" . strrev($value);
+//     $mapped = Arr.map(data, function (value, key) {
+//         return key . "-" . strrev(value);
 //     });
 //     expect(last: "last-llewto"}, $mapped).toEqual({first: "first-rolyat");
 //     expect(last: "otwell"}, data).toEqual({first: "taylor");
 // })
 
 // test("testMapWithEmptyArray", () => {
-//     $mapped = Arr.map([], static function ($value, $key) {
-//         return $key . "-" . $value;
+//     $mapped = Arr.map([], static function (value, key) {
+//         return key . "-" . value;
 //     });
 //     expect($mapped).toEqual([]);
 // })
 
 // test("testMapNullValues", () => {
 //     data = {first: "taylor", last: null};
-//     $mapped = Arr.map(data, static function ($value, $key) {
-//         return $key . "-" . $value;
+//     $mapped = Arr.map(data, static function (value, key) {
+//         return key . "-" . value;
 //     });
 //     expect(last: "last-"}, $mapped).toEqual({first: "first-taylor");
 // })
@@ -936,8 +812,8 @@ test('testExists', () => {
 //     });
 //     expect("2-b"], $result).toEqual(["1-a");
 
-//     $result = Arr.mapSpread($c, function ($number, $character, $key) {
-//         return "{$number}-{$character}-{$key}";
+//     $result = Arr.mapSpread($c, function ($number, $character, key) {
+//         return "{$number}-{$character}-{key}";
 //     });
 //     expect("2-b-1"], $result).toEqual(["1-a-0");
 // })
@@ -983,7 +859,7 @@ test('testExists', () => {
 //     // Does not work for nested keys
 //     array = {emails: [joe@example.com: "Joe", jane@localhost: "Jane"}];
 //     $name = Arr.pull(array, "emails.joe@example.com");
-//     expect($name).toEqualNull();
+//     expect($name).toEqual(undefined);
 //     expect(jane@localhost: "Jane"}], array).toEqual({emails: [joe@example.com: "Joe");
 
 //     // Works with int keys
@@ -1154,19 +1030,19 @@ test('testExists', () => {
 
 //     array = [{name: "foo"}, {name: "bar"}];
 
-//     expect(Arr.sole(array, fn(array $value) => $value["name"] === "foo")).toEqual({name: "foo"});
+//     expect(Arr.sole(array, fn(array value) => value["name"] === "foo")).toEqual({name: "foo"});
 // })
 
 // test("testSoleThrowsExceptionIfNoItemsExist", () => {
 //     expectException(ItemNotFoundException::class);
 
-//     Arr.sole(["foo"], fn(string $value) => $value === "baz");
+//     Arr.sole(["foo"], fn(string value) => value === "baz");
 // })
 
 // test("testSoleThrowsExceptionIfMoreThanOneItemExists", () => {
 //     expectExceptionObject(new MultipleItemsFoundException(2));
 
-//     Arr.sole(["baz", "foo", "baz"], fn(string $value) => $value === "baz");
+//     Arr.sole(["baz", "foo", "baz"], fn(string value) => value === "baz");
 // })
 
 // test("testEmptyShuffle", () => {
@@ -1183,8 +1059,8 @@ test('testExists', () => {
 
 //     // sort with closure
 //     $sortedWithClosure = array_values(
-//         Arr.sort($unsorted, function ($value) {
-//             return $value["name"];
+//         Arr.sort($unsorted, function (value) {
+//             return value["name"];
 //         }),
 //     );
 //     expect($sortedWithClosure).toEqual($expected);
@@ -1204,8 +1080,8 @@ test('testExists', () => {
 
 //     // sort with closure
 //     $sortedWithClosure = array_values(
-//         Arr.sortDesc($unsorted, function ($value) {
-//             return $value["name"];
+//         Arr.sortDesc($unsorted, function (value) {
+//             return value["name"];
 //         }),
 //     );
 //     expect($sortedWithClosure).toEqual($expected);
@@ -1351,8 +1227,8 @@ test('testExists', () => {
 // test("testWhere", () => {
 //     array = [100, "200", 300, "400", 500];
 
-//     array = Arr.where(array, function ($value, $key) {
-//         return is_string($value);
+//     array = Arr.where(array, function (value, key) {
+//         return is_string(value);
 //     });
 
 //     expect(3 => "400"], array).toEqual([1 => "200");
@@ -1361,8 +1237,8 @@ test('testExists', () => {
 // test("testWhereKey", () => {
 //     array = {10: 1, foo: 3, 20 => 2};
 
-//     array = Arr.where(array, function ($value, $key) {
-//         return is_numeric($key);
+//     array = Arr.where(array, function (value, key) {
+//         return is_numeric(key);
 //     });
 
 //     expect(20 => 2}, array).toEqual({10: 1);
@@ -1632,8 +1508,8 @@ test('testExists', () => {
 //     array = [1, 2, 3, 4, 5, 6];
 
 //     // Test rejection behavior (removing even numbers)
-//     $result = Arr.reject(array, function ($value) {
-//         return $value % 2 === 0;
+//     $result = Arr.reject(array, function (value) {
+//         return value % 2 === 0;
 //     });
 
 //     assertEquals(
@@ -1648,8 +1524,8 @@ test('testExists', () => {
 //     // Test key preservation with associative array
 //     $assocArray = {a: 1, b: 2, c: 3, d: 4};
 
-//     $result = Arr.reject($assocArray, function ($value) {
-//         return $value > 2;
+//     $result = Arr.reject($assocArray, function (value) {
+//         return value > 2;
 //     });
 
 //     assertEquals(
@@ -1664,7 +1540,7 @@ test('testExists', () => {
 // test("testPartition", () => {
 //     array = ["John", "Jane", "Greg"];
 
-//     $result = Arr.partition(array, fn(string $value) => str_contains($value, "J"));
+//     $result = Arr.partition(array, fn(string value) => str_contains(value, "J"));
 
 //     expect(1 => "Jane"], [2 => "Greg"]], $result).toEqual([[0 => "John");
 // });

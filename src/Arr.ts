@@ -414,7 +414,7 @@ export class Arr {
             return empty(array) ? value(defaultValue) : array_last(array);
         }
 
-        return Arr.first(array_reverse(array), callback, defaultValue);
+        return Arr.first(array_reverse(array, true), callback, defaultValue);
     }
 
     /**
