@@ -30,30 +30,22 @@ test('add', () => {
     expect(Arr.add({ category: { type: 'Table' } }, 'category.type', 'Chair')).toEqual({ category: { type: 'Table' } });
 });
 
-test('testPush', () => {
-    let array = {};
+test('boolean', () => {
+    const testArray = { string: 'foo bar', boolean: true };
 
-    Arr.push(array, 'office.furniture', 'Desk');
-    expect(array['office']['furniture']).toEqual(['Desk']);
+    // Test boolean values are returned as booleans
+    expect(Arr.boolean(testArray, 'boolean')).toEqual(true);
 
-    Arr.push(array, 'office.furniture', 'Chair', 'Lamp');
-    expect(array['office']['furniture']).toEqual(['Desk', 'Chair', 'Lamp']);
+    // Test that default boolean values are returned for missing keys
+    expect(Arr.boolean(testArray, 'missing_key', true)).toEqual(true);
 
-    array = [];
-
-    Arr.push(array, undefined, 'Chris', 'Nuno');
-    expect(array).toEqual(['Chris', 'Nuno']);
-
-    Arr.push(array, undefined, 'Taylor');
-    expect(array).toEqual(['Chris', 'Nuno', 'Taylor']);
-
-    array = { foo: { bar: false } };
-    expect(() => Arr.push(array, 'foo.bar', 'baz')).toThrow(
-        'Array value for key [foo.bar] must be an array, boolean found.',
+    // Test that an exception is raised if the value is not a boolean
+    expect(() => Arr.boolean(testArray, 'string')).toThrow(
+        'Array value for key [string] must be a boolean, string found.',
     );
 });
 
-test('testCollapse', () => {
+test('collapse', () => {
     // Normal case: a two-dimensional array with different elements
     let data = [['foo', 'bar'], ['baz']];
     expect(Arr.collapse(data)).toEqual(['foo', 'bar', 'baz']);
@@ -71,7 +63,7 @@ test('testCollapse', () => {
     expect(Arr.collapse(mixedArray)).toEqual([1, 2, 'foo', 'bar']);
 });
 
-test('testCrossJoin', () => {
+test('crossJoin', () => {
     // Single dimension
     expect(Arr.crossJoin([1], ['a', 'b', 'c'])).toEqual([
         [1, 'a'],
@@ -127,7 +119,7 @@ test('testCrossJoin', () => {
     expect(Arr.crossJoin()).toEqual([[]]);
 });
 
-test('testDivide', () => {
+test('divide', () => {
     // Test dividing an empty array
     let [keys, values]: any = Arr.divide([]);
     expect(keys).toEqual([]);
@@ -164,7 +156,7 @@ test('testDivide', () => {
     expect(values).toEqual(['one', { one: 1, 2: 'second' }]);
 });
 
-test('testDot', () => {
+test('dot', () => {
     let array = Arr.dot({ foo: { bar: 'baz' } });
     expect(array).toEqual({ 'foo.bar': 'baz' });
 
@@ -203,26 +195,7 @@ test('testDot', () => {
     });
 });
 
-test('testUndot', () => {
-    let array = Arr.undot({
-        'user.name': 'Taylor',
-        'user.age': 25,
-        'user.languages.0': 'PHP',
-        'user.languages.1': 'C#',
-    });
-    expect(array).toEqual({ user: { name: 'Taylor', age: 25, languages: { 0: 'PHP', 1: 'C#' } } });
-
-    array = Arr.undot({
-        'pagination.previous': '<<',
-        'pagination.next': '>>',
-    });
-    expect(array).toEqual({ pagination: { previous: '<<', next: '>>' } });
-
-    array = Arr.undot({ 0: 'foo', 'foo.bar': 'baz', 'foo.baz': { a: 'b' } });
-    expect(array).toEqual({ 0: 'foo', foo: { bar: 'baz', baz: { a: 'b' } } });
-});
-
-test('testExcept', () => {
+test('except', () => {
     let array: any = { name: 'taylor', age: 26 };
     expect(Arr.except(array, ['name'])).toEqual({ age: 26 });
     expect(Arr.except(array, 'name')).toEqual({ age: 26 });
@@ -237,7 +210,7 @@ test('testExcept', () => {
     expect(Arr.except(array, '2.5')).toEqual({ 1: 'hAz', 2: { 12: 'baz' } });
 });
 
-test('testExists', () => {
+test('exists', () => {
     expect(Arr.exists([1], 0)).toEqual(true);
     expect(Arr.exists([null], 0)).toEqual(true);
     expect(Arr.exists({ a: 1 }, 'a')).toEqual(true);
@@ -247,26 +220,7 @@ test('testExists', () => {
     expect(Arr.exists({ a: 1 }, 0)).toEqual(false);
 });
 
-test('testWhereNotUndefined', () => {
-    let array = array_values(Arr.whereNotUndefined([undefined, 0, false, '', undefined, []]));
-    expect(array).toEqual([0, false, '', []]);
-
-    array = array_values(Arr.whereNotUndefined([1, 2, 3]));
-    expect(array).toEqual([1, 2, 3]);
-
-    array = array_values(Arr.whereNotUndefined([undefined, undefined, undefined]));
-    expect(array).toEqual([]);
-
-    array = array_values(Arr.whereNotUndefined(['a', undefined, 'b', undefined, 'c']));
-    expect(array).toEqual(['a', 'b', 'c']);
-
-    const obj = {};
-    const fun = () => undefined;
-    array = array_values(Arr.whereNotUndefined([undefined, 1, 'string', 0.0, false, [], obj, fun]));
-    expect(array).toEqual([1, 'string', 0.0, false, [], obj, fun]);
-});
-
-test('testFirst', () => {
+test('first', () => {
     const array = [100, 200, 300];
 
     // Callback is undefined and array is empty
@@ -296,45 +250,7 @@ test('testFirst', () => {
     expect(value5).toEqual(100);
 });
 
-test('testJoin', () => {
-    expect(Arr.join(['a', 'b', 'c'], ', ')).toEqual('a, b, c');
-    expect(Arr.join(['a', 'b', 'c'], ', ', ' and ')).toEqual('a, b and c');
-    expect(Arr.join(['a', 'b'], ', ', ' and ')).toEqual('a and b');
-    expect(Arr.join(['a'], ', ', ' and ')).toEqual('a');
-    expect(Arr.join([], ', ', ' and ')).toEqual('');
-});
-
-test('testLast', () => {
-    const array = [100, 200, 300];
-
-    // Callback is undefined and array is empty
-    expect(Arr.last([], undefined)).toEqual(undefined);
-    expect(Arr.last([], undefined, 'foo')).toEqual('foo');
-    expect(Arr.last([], undefined, () => 'bar')).toEqual('bar');
-
-    // // Callback is undefined and array is not empty
-    expect(Arr.last(array)).toEqual(300);
-
-    // // Callback is not undefined and array is not empty
-    const value = Arr.last(array, (value) => value < 250);
-    expect(value).toEqual(200);
-
-    // Callback is not undefined, array is not empty but no satisfied item
-    const value2 = Arr.last(array, (value) => value > 300);
-    const value3 = Arr.last(array, (value) => value > 300, 'bar');
-    const value4 = Arr.last(
-        array,
-        (value) => value > 300,
-        () => 'baz',
-    );
-    const value5 = Arr.last(array, (_, key) => Number(key) < 2);
-    expect(value2).toEqual(undefined);
-    expect(value3).toEqual('bar');
-    expect(value4).toEqual('baz');
-    expect(value5).toEqual(300);
-});
-
-test('testFlatten', () => {
+test('flatten', () => {
     // Flat arrays are unaffected
     let array: any = ['#foo', '#bar', '#baz'];
     expect(Arr.flatten(array)).toEqual(['#foo', '#bar', '#baz']);
@@ -354,11 +270,9 @@ test('testFlatten', () => {
     // Deeply nested arrays are flattened
     array = [['#foo', ['#bar']], ['#baz']];
     expect(Arr.flatten(array)).toEqual(['#foo', '#bar', '#baz']);
-});
 
-test('testFlattenWithDepth', () => {
     // No depth flattens recursively
-    let array = [['#foo', ['#bar', ['#baz']]], '#zap'];
+    array = [['#foo', ['#bar', ['#baz']]], '#zap'];
     expect(Arr.flatten(array)).toEqual(['#foo', '#bar', '#baz', '#zap']);
 
     // Specifying a depth only flattens to that depth
@@ -369,7 +283,20 @@ test('testFlattenWithDepth', () => {
     expect(Arr.flatten(array, 2)).toEqual(['#foo', '#bar', ['#baz'], '#zap']);
 });
 
-test('testGet', () => {
+test('float', () => {
+    const testArray = { string: 'foo bar', float: 12.34 };
+
+    // Test float values are returned as floats
+    expect(Arr.float(testArray, 'float')).toEqual(12.34);
+
+    // Test that default float values are returned for missing keys
+    expect(Arr.float(testArray, 'missing_key', 56.78)).toEqual(56.78);
+
+    // Test that an exception is raised if the value is not a float
+    expect(() => Arr.float(testArray, 'string')).toThrow('Array value for key [string] must be a float, string found.');
+});
+
+test('get', () => {
     let array: any = { 'products.desk': { price: 100 } };
     expect(Arr.get(array, 'products.desk')).toEqual({ price: 100 });
 
@@ -409,285 +336,322 @@ test('testGet', () => {
     expect(Arr.get({ '': { '': 'bar' } }, '.')).toEqual('bar');
 });
 
-// test("testItGetsAString", () => {
-//     $test_array = {string: "foo bar", integer: 1234};
+test('integer', () => {
+    const testArray = { string: 'foo bar', integer: 1234 };
 
-//     // Test string values are returned as strings
-//     expect(Arr.string($test_array, "string")).toEqual("foo bar");
+    // Test integer values are returned as integers
+    expect(Arr.integer(testArray, 'integer')).toEqual(1234);
 
-//     // Test that default string values are returned for missing keys
-//     expect(Arr.string($test_array, "missing_key", "default")).toEqual("default");
+    // Test that default integer values are returned for missing keys
+    expect(Arr.integer(testArray, 'missing_key', 999)).toEqual(999);
 
-//     // Test that an exception is raised if the value is not a string
-//     expectException(InvalidArgumentException::class);
-//     expectExceptionMessageMatches("#^Array value for key \[integer\] must be a string, (.*) found.#");
-//     Arr.string($test_array, "integer");
-// })
+    // Test that an exception is raised if the value is not an integer
+    expect(() => Arr.integer(testArray, 'string')).toThrow(
+        'Array value for key [string] must be an integer, string found.',
+    );
+});
 
-// test("testItGetsAnInteger", () => {
-//     $test_array = {string: "foo bar", integer: 1234};
+test('join', () => {
+    expect(Arr.join(['a', 'b', 'c'], ', ')).toEqual('a, b, c');
+    expect(Arr.join(['a', 'b', 'c'], ', ', ' and ')).toEqual('a, b and c');
+    expect(Arr.join(['a', 'b'], ', ', ' and ')).toEqual('a and b');
+    expect(Arr.join(['a'], ', ', ' and ')).toEqual('a');
+    expect(Arr.join([], ', ', ' and ')).toEqual('');
+});
 
-//     // Test integer values are returned as integers
-//     expect(Arr.integer($test_array, "integer")).toEqual(1234);
+test('last', () => {
+    const array = [100, 200, 300];
 
-//     // Test that default integer values are returned for missing keys
-//     expect(Arr.integer($test_array, "missing_key", 999)).toEqual(999);
+    // Callback is undefined and array is empty
+    expect(Arr.last([], undefined)).toEqual(undefined);
+    expect(Arr.last([], undefined, 'foo')).toEqual('foo');
+    expect(Arr.last([], undefined, () => 'bar')).toEqual('bar');
 
-//     // Test that an exception is raised if the value is not an integer
-//     expectException(InvalidArgumentException::class);
-//     expectExceptionMessageMatches("#^Array value for key \[string\] must be an integer, (.*) found.#");
-//     Arr.integer($test_array, "string");
-// })
+    // // Callback is undefined and array is not empty
+    expect(Arr.last(array)).toEqual(300);
 
-// test("testItGetsAFloat", () => {
-//     $test_array = {string: "foo bar", float: 12.34};
+    // // Callback is not undefined and array is not empty
+    const value = Arr.last(array, (value) => value < 250);
+    expect(value).toEqual(200);
 
-//     // Test float values are returned as floats
-//     expect(Arr.float($test_array, "float")).toEqual(12.34);
+    // Callback is not undefined, array is not empty but no satisfied item
+    const value2 = Arr.last(array, (value) => value > 300);
+    const value3 = Arr.last(array, (value) => value > 300, 'bar');
+    const value4 = Arr.last(
+        array,
+        (value) => value > 300,
+        () => 'baz',
+    );
+    const value5 = Arr.last(array, (_, key) => Number(key) < 2);
+    expect(value2).toEqual(undefined);
+    expect(value3).toEqual('bar');
+    expect(value4).toEqual('baz');
+    expect(value5).toEqual(300);
+});
 
-//     // Test that default float values are returned for missing keys
-//     expect(Arr.float($test_array, "missing_key", 56.78)).toEqual(56.78);
+test('push', () => {
+    let array = {};
 
-//     // Test that an exception is raised if the value is not a float
-//     expectException(InvalidArgumentException::class);
-//     expectExceptionMessageMatches("#^Array value for key \[string\] must be a float, (.*) found.#");
-//     Arr.float($test_array, "string");
-// })
+    Arr.push(array, 'office.furniture', 'Desk');
+    expect(array['office']['furniture']).toEqual(['Desk']);
 
-// test("testItGetsABoolean", () => {
-//     $test_array = {string: "foo bar", boolean: true};
+    Arr.push(array, 'office.furniture', 'Chair', 'Lamp');
+    expect(array['office']['furniture']).toEqual(['Desk', 'Chair', 'Lamp']);
 
-//     // Test boolean values are returned as booleans
-//     expect(Arr.boolean($test_array, "boolean")).toEqual(true);
+    array = [];
 
-//     // Test that default boolean values are returned for missing keys
-//     expect(Arr.boolean($test_array, "missing_key", true)).toEqual(true);
+    Arr.push(array, undefined, 'Chris', 'Nuno');
+    expect(array).toEqual(['Chris', 'Nuno']);
 
-//     // Test that an exception is raised if the value is not a boolean
-//     expectException(InvalidArgumentException::class);
-//     expectExceptionMessageMatches("#^Array value for key \[string\] must be a boolean, (.*) found.#");
-//     Arr.boolean($test_array, "string");
-// })
+    Arr.push(array, undefined, 'Taylor');
+    expect(array).toEqual(['Chris', 'Nuno', 'Taylor']);
 
-// test("testItGetsAnArray", () => {
-//     $test_array = {string: "foo bar", array: ["foo", "bar"}];
+    array = { foo: { bar: false } };
+    expect(() => Arr.push(array, 'foo.bar', 'baz')).toThrow(
+        'Array value for key [foo.bar] must be an array, boolean found.',
+    );
+});
 
-//     // Test array values are returned as arrays
-//     expect("bar"], Arr.array($test_array, "array")).toEqual(["foo");
+test('string', () => {
+    const testArray = { string: 'foo bar', integer: 1234 };
 
-//     // Test that default array values are returned for missing keys
-//     expect("two"], Arr.array($test_array, "missing_key", [1, "two"])).toEqual([1);
+    // Test string values are returned as strings
+    expect(Arr.string(testArray, 'string')).toEqual('foo bar');
 
-//     // Test that an exception is raised if the value is not an array
-//     expectException(InvalidArgumentException::class);
-//     expectExceptionMessageMatches("#^Array value for key \[string\] must be an array, (.*) found.#");
-//     Arr.array($test_array, "string");
-// })
+    // Test that default string values are returned for missing keys
+    expect(Arr.string(testArray, 'missing_key', 'default')).toEqual('default');
 
-// test("testHas", () => {
-//     array = {products.desk: [price: 100}];
-//     expect(Arr.has(array, "products.desk")).toEqual(true);
+    // Test that an exception is raised if the value is not a string
+    expect(() => Arr.string(testArray, 'integer')).toThrow(
+        'Array value for key [integer] must be a string, number found.',
+    );
+});
 
-//     array = {products: [desk: [price: 100}]];
-//     expect(Arr.has(array, "products.desk")).toEqual(true);
-//     expect(Arr.has(array, "products.desk.price")).toEqual(true);
-//     expect(Arr.has(array, "products.foo")).toEqual(false);
-//     expect(Arr.has(array, "products.desk.foo")).toEqual(false);
+test('undot', () => {
+    let array = Arr.undot({
+        'user.name': 'Taylor',
+        'user.age': 25,
+        'user.languages.0': 'PHP',
+        'user.languages.1': 'C#',
+    });
+    expect(array).toEqual({ user: { name: 'Taylor', age: 25, languages: { 0: 'PHP', 1: 'C#' } } });
 
-//     array = {foo: null, bar: [baz: null}];
-//     expect(Arr.has(array, "foo")).toEqual(true);
-//     expect(Arr.has(array, "bar.baz")).toEqual(true);
+    array = Arr.undot({
+        'pagination.previous': '<<',
+        'pagination.next': '>>',
+    });
+    expect(array).toEqual({ pagination: { previous: '<<', next: '>>' } });
 
-//     array = new ArrayObject({foo: 10, bar: new ArrayObject([baz: 10})]);
-//     expect(Arr.has(array, "foo")).toEqual(true);
-//     expect(Arr.has(array, "bar")).toEqual(true);
-//     expect(Arr.has(array, "bar.baz")).toEqual(true);
-//     expect(Arr.has(array, "xxx")).toEqual(false);
-//     expect(Arr.has(array, "xxx.yyy")).toEqual(false);
-//     expect(Arr.has(array, "foo.xxx")).toEqual(false);
-//     expect(Arr.has(array, "bar.xxx")).toEqual(false);
+    array = Arr.undot({ 0: 'foo', 'foo.bar': 'baz', 'foo.baz': { a: 'b' } });
+    expect(array).toEqual({ 0: 'foo', foo: { bar: 'baz', baz: { a: 'b' } } });
+});
 
-//     array = new ArrayObject({foo: null, bar: new ArrayObject([baz: null})]);
-//     expect(Arr.has(array, "foo")).toEqual(true);
-//     expect(Arr.has(array, "bar.baz")).toEqual(true);
+test('whereNotUndefined', () => {
+    let array = array_values(Arr.whereNotUndefined([undefined, 0, false, '', undefined, []]));
+    expect(array).toEqual([0, false, '', []]);
 
-//     array = ["foo", "bar"];
-//     expect(Arr.has(array, null)).toEqual(false);
+    array = array_values(Arr.whereNotUndefined([1, 2, 3]));
+    expect(array).toEqual([1, 2, 3]);
 
-//     expect(Arr.has(null, "foo")).toEqual(false);
-//     expect(Arr.has(false, "foo")).toEqual(false);
+    array = array_values(Arr.whereNotUndefined([undefined, undefined, undefined]));
+    expect(array).toEqual([]);
 
-//     expect(Arr.has(null, null)).toEqual(false);
-//     expect(Arr.has([], null)).toEqual(false);
+    array = array_values(Arr.whereNotUndefined(['a', undefined, 'b', undefined, 'c']));
+    expect(array).toEqual(['a', 'b', 'c']);
 
-//     array = {products: [desk: [price: 100}]];
-//     expect(Arr.has(array, ["products.desk"])).toEqual(true);
-//     expect(Arr.has(array, ["products.desk", "products.desk.price"])).toEqual(true);
-//     expect(Arr.has(array, ["products", "products"])).toEqual(true);
-//     expect(Arr.has(array, ["foo"])).toEqual(false);
-//     expect(Arr.has(array, [])).toEqual(false);
-//     expect(Arr.has(array, ["products.desk", "products.price"])).toEqual(false);
+    const obj = {};
+    const fun = () => undefined;
+    array = array_values(Arr.whereNotUndefined([undefined, 1, 'string', 0.0, false, [], obj, fun]));
+    expect(array).toEqual([1, 'string', 0.0, false, [], obj, fun]);
+});
 
-//     array = {
-//         products: [[name: "desk"}],
-//     ];
-//     expect(Arr.has(array, "products.0.name")).toEqual(true);
-//     expect(Arr.has(array, "products.0.price")).toEqual(false);
+test('array', () => {
+    const testArray = { string: 'foo bar', array: ['foo', 'bar'] };
 
-//     expect(Arr.has([], [null])).toEqual(false);
-//     expect(Arr.has(null, [null])).toEqual(false);
+    // Test array values are returned as arrays
+    expect(Arr.array(testArray, 'array')).toEqual(['foo', 'bar']);
 
-//     expect(Arr.has(["" => "some"], "")).toEqual(true);
-//     expect(Arr.has(["" => "some"], [""])).toEqual(true);
-//     expect(Arr.has([""], "")).toEqual(false);
-//     expect(Arr.has([], "")).toEqual(false);
-//     expect(Arr.has([], [""])).toEqual(false);
-// })
+    // Test that default array values are returned for missing keys
+    expect(Arr.array(testArray, 'missing_key', [1, 'two'])).toEqual([1, 'two']);
 
-// test("testHasAllMethod", () => {
-//     array = {name: "Taylor", age: "", city: null};
-//     expect(Arr.hasAll(array, "name")).toEqual(true);
-//     expect(Arr.hasAll(array, "age")).toEqual(true);
-//     expect(Arr.hasAll(array, ["age", "car"])).toEqual(false);
-//     expect(Arr.hasAll(array, "city")).toEqual(true);
-//     expect(Arr.hasAll(array, ["city", "some"])).toEqual(false);
-//     expect(Arr.hasAll(array, ["name", "age", "city"])).toEqual(true);
-//     expect(Arr.hasAll(array, ["name", "age", "city", "country"])).toEqual(false);
+    // Test that an exception is raised if the value is not an array
+    expect(() => Arr.array(testArray, 'string')).toThrow(
+        'Array value for key [string] must be an array, string found.',
+    );
+});
 
-//     array = {user: [name: "Taylor"}];
-//     expect(Arr.hasAll(array, "user.name")).toEqual(true);
-//     expect(Arr.hasAll(array, "user.age")).toEqual(false);
+test('has', () => {
+    let array: any = { 'products.desk': { price: 100 } };
+    expect(Arr.has(array, 'products.desk')).toEqual(true);
 
-//     array = {name: "Taylor", age: "", city: null};
-//     expect(Arr.hasAll(array, "foo")).toEqual(false);
-//     expect(Arr.hasAll(array, "bar")).toEqual(false);
-//     expect(Arr.hasAll(array, "baz")).toEqual(false);
-//     expect(Arr.hasAll(array, "bah")).toEqual(false);
-//     expect(Arr.hasAll(array, ["foo", "bar", "baz", "bar"])).toEqual(false);
-// })
+    array = { products: { desk: { price: 100 } } };
+    expect(Arr.has(array, 'products.desk')).toEqual(true);
+    expect(Arr.has(array, 'products.desk.price')).toEqual(true);
+    expect(Arr.has(array, 'products.foo')).toEqual(false);
+    expect(Arr.has(array, 'products.desk.foo')).toEqual(false);
 
-// test("testHasAnyMethod", () => {
-//     array = {name: "Taylor", age: "", city: null};
-//     expect(Arr.hasAny(array, "name")).toEqual(true);
-//     expect(Arr.hasAny(array, "age")).toEqual(true);
-//     expect(Arr.hasAny(array, "city")).toEqual(true);
-//     expect(Arr.hasAny(array, "foo")).toEqual(false);
-//     expect(Arr.hasAny(array, "name", "email")).toEqual(true);
-//     expect(Arr.hasAny(array, ["name", "email"])).toEqual(true);
+    array = {
+        foo: null,
+        bar: { baz: null },
+    };
+    expect(Arr.has(array, 'foo')).toEqual(true);
+    expect(Arr.has(array, 'bar.baz')).toEqual(true);
 
-//     array = {name: "Taylor", email: "foo"};
-//     expect(Arr.hasAny(array, "name", "email")).toEqual(true);
-//     expect(Arr.hasAny(array, "surname", "password")).toEqual(false);
-//     expect(Arr.hasAny(array, ["surname", "password"])).toEqual(false);
+    array = { products: { desk: { price: 100 } } };
+    expect(Arr.has(array, ['products.desk'])).toEqual(true);
+    expect(Arr.has(array, ['products.desk', 'products.desk.price'])).toEqual(true);
+    expect(Arr.has(array, ['products', 'products'])).toEqual(true);
+    expect(Arr.has(array, ['foo'])).toEqual(false);
+    expect(Arr.has(array, [])).toEqual(false);
+    expect(Arr.has(array, ['products.desk', 'products.price'])).toEqual(false);
 
-//     array = {foo: [bar: null, baz: ""}];
-//     expect(Arr.hasAny(array, "foo.bar")).toEqual(true);
-//     expect(Arr.hasAny(array, "foo.baz")).toEqual(true);
-//     expect(Arr.hasAny(array, "foo.bax")).toEqual(false);
-//     expect(Arr.hasAny(array, ["foo.bax", "foo.baz"])).toEqual(true);
-// })
+    array = { products: [{ name: 'desk' }] };
+    expect(Arr.has(array, 'products.0.name')).toEqual(true);
+    expect(Arr.has(array, 'products.0.price')).toEqual(false);
 
-// test("testEvery", () => {
-//     expect(Arr.every([1, 2], fn(value, key) => is_string(value))).toEqual(false);
-//     expect(Arr.every(["foo", 2], fn(value, key) => is_string(value))).toEqual(false);
-//     expect(Arr.every(["foo", "bar"], fn(value, key) => is_string(value))).toEqual(true);
-// })
+    expect(Arr.has({ '': 'some' }, '')).toEqual(true);
+    expect(Arr.has({ '': 'some' }, [''])).toEqual(true);
+    expect(Arr.has([''], '')).toEqual(false);
+    expect(Arr.has([], '')).toEqual(false);
+    expect(Arr.has([], [''])).toEqual(false);
+});
 
-// test("testSome", () => {
-//     expect(Arr.some([1, 2], fn(value, key) => is_string(value))).toEqual(false);
-//     expect(Arr.some(["foo", 2], fn(value, key) => is_string(value))).toEqual(true);
-//     expect(Arr.some(["foo", "bar"], fn(value, key) => is_string(value))).toEqual(true);
-// })
+test('hasAll', () => {
+    let array: any = { name: 'Taylor', age: '', city: null };
+    expect(Arr.hasAll(array, 'name')).toEqual(true);
+    expect(Arr.hasAll(array, 'age')).toEqual(true);
+    expect(Arr.hasAll(array, ['age', 'car'])).toEqual(false);
+    expect(Arr.hasAll(array, 'city')).toEqual(true);
+    expect(Arr.hasAll(array, ['city', 'some'])).toEqual(false);
+    expect(Arr.hasAll(array, ['name', 'age', 'city'])).toEqual(true);
+    expect(Arr.hasAll(array, ['name', 'age', 'city', 'country'])).toEqual(false);
 
-// test("testIsAssoc", () => {
-//     expect(Arr.isAssoc({a: "a", 0 => "b"})).toEqual(true);
-//     expect(Arr.isAssoc([1 => "a", 0 => "b"])).toEqual(true);
-//     expect(Arr.isAssoc([1 => "a", 2 => "b"])).toEqual(true);
-//     expect(Arr.isAssoc([0 => "a", 1 => "b"])).toEqual(false);
-//     expect(Arr.isAssoc(["a", "b"])).toEqual(false);
+    array = { user: { name: 'Taylor' } };
+    expect(Arr.hasAll(array, 'user.name')).toEqual(true);
+    expect(Arr.hasAll(array, 'user.age')).toEqual(false);
 
-//     expect(Arr.isAssoc([])).toEqual(false);
-//     expect(Arr.isAssoc([1, 2, 3])).toEqual(false);
-//     expect(Arr.isAssoc(["foo", 2, 3])).toEqual(false);
-//     expect(Arr.isAssoc([0 => "foo", "bar"])).toEqual(false);
+    array = { name: 'Taylor', age: '', city: null };
+    expect(Arr.hasAll(array, 'foo')).toEqual(false);
+    expect(Arr.hasAll(array, 'bar')).toEqual(false);
+    expect(Arr.hasAll(array, 'baz')).toEqual(false);
+    expect(Arr.hasAll(array, 'bah')).toEqual(false);
+    expect(Arr.hasAll(array, ['foo', 'bar', 'baz', 'bar'])).toEqual(false);
+});
 
-//     expect(Arr.isAssoc([1 => "foo", "bar"])).toEqual(true);
-//     expect(Arr.isAssoc([0 => "foo", "bar" => "baz"])).toEqual(true);
-//     expect(Arr.isAssoc([0 => "foo", 2 => "bar"])).toEqual(true);
-//     expect(Arr.isAssoc({foo: "bar", baz: "qux"})).toEqual(true);
-// })
+test('hasAny', () => {
+    let array: any = { name: 'Taylor', age: '', city: null };
+    expect(Arr.hasAny(array, 'name')).toEqual(true);
+    expect(Arr.hasAny(array, 'age')).toEqual(true);
+    expect(Arr.hasAny(array, 'city')).toEqual(true);
+    expect(Arr.hasAny(array, 'foo')).toEqual(false);
+    expect(Arr.hasAny(array, ['name', 'email'])).toEqual(true);
 
-// test("testIsList", () => {
-//     expect(Arr.isList([])).toEqual(true);
-//     expect(Arr.isList([1, 2, 3])).toEqual(true);
-//     expect(Arr.isList(["foo", 2, 3])).toEqual(true);
-//     expect(Arr.isList(["foo", "bar"])).toEqual(true);
-//     expect(Arr.isList([0 => "foo", "bar"])).toEqual(true);
-//     expect(Arr.isList([0 => "foo", 1 => "bar"])).toEqual(true);
+    array = { name: 'Taylor', email: 'foo' };
+    expect(Arr.hasAny(array, ['surname', 'password'])).toEqual(false);
 
-//     expect(Arr.isList([-1 => 1])).toEqual(false);
-//     expect(Arr.isList([-1 => 1, 0 => 2])).toEqual(false);
-//     expect(Arr.isList([1 => "foo", "bar"])).toEqual(false);
-//     expect(Arr.isList([1 => "foo", 0 => "bar"])).toEqual(false);
-//     expect(Arr.isList([0 => "foo", "bar" => "baz"])).toEqual(false);
-//     expect(Arr.isList([0 => "foo", 2 => "bar"])).toEqual(false);
-//     expect(Arr.isList({foo: "bar", baz: "qux"})).toEqual(false);
-// })
+    array = { foo: { bar: null, baz: '' } };
+    expect(Arr.hasAny(array, 'foo.bar')).toEqual(true);
+    expect(Arr.hasAny(array, 'foo.baz')).toEqual(true);
+    expect(Arr.hasAny(array, 'foo.bax')).toEqual(false);
+    expect(Arr.hasAny(array, ['foo.bax', 'foo.baz'])).toEqual(true);
+});
 
-// test("testOnly", () => {
-//     array = {name: "Desk", price: 100, orders: 10};
-//     array = Arr.only(array, ["name", "price"]);
-//     expect(price: 100}, array).toEqual({name: "Desk");
-//     assertEmpty(Arr.only(array, ["nonExistingKey"]));
+test('every', () => {
+    expect(Arr.every([1, 2], (value) => typeof value === 'string')).toEqual(false);
+    expect(Arr.every(['foo', 2], (value) => typeof value === 'string')).toEqual(false);
+    expect(Arr.every(['foo', 'bar'], (value) => typeof value === 'string')).toEqual(true);
+});
 
-//     assertEmpty(Arr.only(array, null));
+test('some', () => {
+    expect(Arr.some([1, 2], (value, key) => typeof value === 'string')).toEqual(false);
+    expect(Arr.some(['foo', 2], (value, key) => typeof value === 'string')).toEqual(true);
+    expect(Arr.some(['foo', 'bar'], (value, key) => typeof value === 'string')).toEqual(true);
+});
 
-//     // Test with array having numeric keys
-//     expect(Arr.only(["foo", "bar", "baz"], 0)).toEqual(["foo"]);
-//     expect(2 => "baz"], Arr.only(["foo", "bar", "baz"], [1, 2])).toEqual([1 => "bar");
-//     assertEmpty(Arr.only(["foo", "bar", "baz"], [3]));
+test('isAssoc', () => {
+    expect(Arr.isAssoc({ a: 'a', 0: 'b' })).toEqual(true);
+    expect(Arr.isAssoc({ 1: 'a', 0: 'b' })).toEqual(false);
+    expect(Arr.isAssoc({ 1: 'a', 2: 'b' })).toEqual(true);
+    expect(Arr.isAssoc({ 0: 'a', 1: 'b' })).toEqual(false);
+    expect(Arr.isAssoc(['a', 'b'])).toEqual(false);
 
-//     // Test with array having numeric key and string key
-//     expect(Arr.only(["foo", bar: "baz"}, 0)).toEqual({"foo"]);
-//     expect(Arr.only({"foo", bar: "baz"}, "bar")).toEqual({bar: "baz"});
-// })
+    expect(Arr.isAssoc([])).toEqual(false);
+    expect(Arr.isAssoc([1, 2, 3])).toEqual(false);
+    expect(Arr.isAssoc(['foo', 2, 3])).toEqual(false);
+    expect(Arr.isAssoc({ 0: 'foo', 1: 'bar' })).toEqual(false);
 
-// test("testPluck", () => {
-//     data = {
-//         post-1: [
-//             comments: [
-//                 tags: ["#foo", "#bar"},
-//             ],
-//         ],
-//         "post-2" => {
-//             comments: [
-//                 tags: ["#baz"},
-//             ],
-//         ],
-//     ];
+    expect(Arr.isAssoc({ 1: 'foo', 0: 'bar' })).toEqual(false);
+    expect(Arr.isAssoc({ 0: 'foo', bar: 'baz' })).toEqual(true);
+    expect(Arr.isAssoc({ 0: 'foo', 2: 'bar' })).toEqual(true);
+    expect(Arr.isAssoc({ foo: 'bar', baz: 'qux' })).toEqual(true);
+});
 
-//     assertEquals(
-//         [
-//             0 => {
-//                 tags: ["#foo", "#bar"},
-//             ],
-//             1 => {
-//                 tags: ["#baz"},
-//             ],
-//         ],
-//         Arr.pluck(data, "comments"),
-//     );
+test('isList', () => {
+    expect(Arr.isList([])).toEqual(true);
+    expect(Arr.isList([1, 2, 3])).toEqual(true);
+    expect(Arr.isList(['foo', 2, 3])).toEqual(true);
+    expect(Arr.isList(['foo', 'bar'])).toEqual(true);
+    expect(Arr.isList({ 0: 'foo', 1: 'bar' })).toEqual(true);
 
-//     expect("#bar"], ["#baz"]], Arr.pluck(data, "comments.tags")).toEqual([["#foo");
-//     expect(null], Arr.pluck(data, "foo")).toEqual([null);
-//     expect(null], Arr.pluck(data, "foo.bar")).toEqual([null);
+    expect(Arr.isList({ '-1': 1 })).toEqual(false);
+    expect(Arr.isList({ '-1': 1, 0: 2 })).toEqual(false);
+    expect(Arr.isList({ 0: 'foo', 2: 'bar' })).toEqual(false);
+    expect(Arr.isList({ foo: 'bar', baz: 'qux' })).toEqual(false);
+    expect(Arr.isList({ 1: 'foo', 0: 'bar' })).toEqual(true);
+});
 
-//     array = [{developer: [name: "Taylor"}], {developer: [name: "Abigail"}]];
+test('only', () => {
+    let array: any = { name: 'Desk', price: 100, orders: 10 };
+    array = Arr.only(array, ['name', 'price']);
+    expect(array).toEqual({ name: 'Desk', price: 100 });
+    expect(Arr.only(array, ['nonExistingKey'])).toEqual({});
 
-//     array = Arr.pluck(array, "developer.name");
+    // Test with array having numeric keys
+    expect(Arr.only(['foo', 'bar', 'baz'], 0)).toEqual(['foo']);
+    expect(Arr.only(['foo', 'bar', 'baz'], [1, 2])).toEqual(['bar', 'baz']);
+    expect(Arr.only(['foo', 'bar', 'baz'], [3])).toEqual([]);
 
-//     expect("Abigail"], array).toEqual(["Taylor");
-// })
+    // Test with array having numeric key and string key
+    expect(Arr.only({ 0: 'foo', bar: 'baz' }, 0)).toEqual({ 0: 'foo' });
+    expect(Arr.only({ 0: 'foo', bar: 'baz' }, 'bar')).toEqual({ bar: 'baz' });
+});
+
+test("pluck", () => {
+    data = {
+        post-1: [
+            comments: [
+                tags: ["#foo", "#bar"},
+            ],
+        ],
+        "post-2" => {
+            comments: [
+                tags: ["#baz"},
+            ],
+        ],
+    ];
+
+    assertEquals(
+        [
+            0 => {
+                tags: ["#foo", "#bar"},
+            ],
+            1 => {
+                tags: ["#baz"},
+            ],
+        ],
+        Arr.pluck(data, "comments"),
+    );
+
+    expect("#bar"], ["#baz"]], Arr.pluck(data, "comments.tags")).toEqual([["#foo");
+    expect(null], Arr.pluck(data, "foo")).toEqual([null);
+    expect(null], Arr.pluck(data, "foo.bar")).toEqual([null);
+
+    array = [{developer: [name: "Taylor"}], {developer: [name: "Abigail"}]];
+
+    array = Arr.pluck(array, "developer.name");
+
+    expect("Abigail"], array).toEqual(["Taylor");
+})
 
 // test("testPluckWithArrayValue", () => {
 //     array = [{developer: [name: "Taylor"}], {developer: [name: "Abigail"}]];

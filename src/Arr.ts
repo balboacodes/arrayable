@@ -1,6 +1,6 @@
 // prettier-ignore
 import {
-    abs, array_all, array_any, array_filter, array_find_key, array_first, array_flip, array_intersect_key, array_keys, array_last, array_map, array_merge, array_pop, array_push, array_reverse, array_shift, array_slice, array_unshift, array_values, count, empty, explode, http_build_query, implode, isset, PHP_QUERY_RFC3986, rsort, sort, SORT_FLAG_CASE, SORT_NATURAL, SORT_NUMERIC, SORT_REGULAR, SORT_STRING, str_contains,
+    abs, array_all, array_any, array_filter, array_find_key, array_first, array_flip, array_intersect_key, array_is_list, array_keys, array_last, array_map, array_merge, array_pop, array_push, array_reverse, array_shift, array_slice, array_unshift, array_values, count, empty, explode, http_build_query, implode, isset, PHP_QUERY_RFC3986, rsort, sort, SORT_FLAG_CASE, SORT_NATURAL, SORT_NUMERIC, SORT_REGULAR, SORT_STRING, str_contains,
     unset
 } from '@balboacodes/php-utils';
 import { data_get, value } from './helpers';
@@ -214,6 +214,21 @@ export class Arr {
     }
 
     /**
+     * Get a float item from an array using "dot" notation.
+     *
+     * @throws {TypeError} if array value at key is not a float.
+     */
+    public static float(array: any[] | Record<string, any>, key?: number | string, defaultValue?: number): number {
+        const value = Arr.get(array, key, defaultValue);
+
+        if (!(typeof value === 'number' && !Number.isInteger(value))) {
+            throw new TypeError(`Array value for key [${key}] must be a float, ${typeof value} found.`);
+        }
+
+        return value;
+    }
+
+    /**
      * Remove one or many array items from a given array using "dot" notation.
      */
     public static forget(array: any[] | Record<string, any>, keys: (number | string)[] | number | string): void {
@@ -379,6 +394,24 @@ export class Arr {
         }
 
         return value;
+    }
+
+    /**
+     * Determines if an array is associative.
+     *
+     * An array is "associative" if it doesn't have sequential numerical keys beginning with zero.
+     */
+    public static isAssoc(array: any[] | Record<string, any>): boolean {
+        return !array_is_list(array);
+    }
+
+    /**
+     * Determines if an array is a list.
+     *
+     * An array is a "list" if all array keys are sequential integers starting from 0 with no gaps in between.
+     */
+    public static isList(array: any[] | Record<string, any>): boolean {
+        return array_is_list(array);
     }
 
     /**
