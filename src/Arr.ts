@@ -674,13 +674,13 @@ export class Arr {
                 } else {
                     array.push(value);
                 }
-
-                return array;
             } else {
                 Object.keys(array).forEach((key) => delete array[key]);
 
                 array[0] = value;
             }
+
+            return array;
         }
 
         const keys = explode('.', String(key));

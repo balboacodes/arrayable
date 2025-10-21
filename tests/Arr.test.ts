@@ -800,96 +800,48 @@ test('query', () => {
     expect(Arr.query({ foo: 'bar', bar: '' })).toEqual('foo=bar&bar=');
 });
 
-// test("testSet", () => {
-//     array = {products: [desk: [price: 100}]];
-//     Arr.set(array, "products.desk.price", 200);
-//     expect(array).toEqual({products: [desk: [price: 200}]]);
+test('set', () => {
+    let array: any = { products: { desk: { price: 100 } } };
+    Arr.set(array, 'products.desk.price', 200);
+    expect(array).toEqual({ products: { desk: { price: 200 } } });
 
-//     // No key is given
-//     array = {products: [desk: [price: 100}]];
-//     Arr.set(array, null, {price: 300});
-//     expect(array).toEqual({price: 300});
+    // No key is given
+    array = { products: { desk: { price: 100 } } };
+    Arr.set(array, undefined, { price: 300 });
+    expect(array).toEqual({ 0: { price: 300 } });
 
-//     // The key doesn't exist at the depth
-//     array = {products: "desk"};
-//     Arr.set(array, "products.desk.price", 200);
-//     expect(array).toEqual({products: [desk: [price: 200}]]);
+    // The key doesn't exist at the depth
+    array = { products: 'desk' };
+    Arr.set(array, 'products.desk.price', 200);
+    expect(array).toEqual({ products: { desk: { price: 200 } } });
 
-//     // No corresponding key exists
-//     array = ["products"];
-//     Arr.set(array, "products.desk.price", 200);
-//     expect(products: [desk: [price: 200}]], array).toEqual({"products");
+    // No corresponding key exists
+    array = { products: { desk: { price: 100 } } };
+    Arr.set(array, 'table', 500);
+    expect(array).toEqual({ products: { desk: { price: 100 } }, table: 500 });
 
-//     array = {products: [desk: [price: 100}]];
-//     Arr.set(array, "table", 500);
-//     expect("table" => 500], array).toEqual({products: [desk: [price: 100}]);
+    array = { products: { desk: { price: 100 } } };
+    Arr.set(array, 'table.price', 350);
+    expect(array).toEqual({ products: { desk: { price: 100 } }, table: { price: 350 } });
 
-//     array = {products: [desk: [price: 100}]];
-//     Arr.set(array, "table.price", 350);
-//     expect("table" => {price: 350}], array).toEqual({products: [desk: [price: 100}]);
+    // Override
+    array = { products: 'table' };
+    Arr.set(array, 'products.desk.price', 300);
+    expect(array).toEqual({ products: { desk: { price: 300 } } });
 
-//     array = [];
-//     Arr.set(array, "products.desk.price", 200);
-//     expect(array).toEqual({products: [desk: [price: 200}]]);
+    array = { 1: 'test' };
+    expect(Arr.set(array, 1, 'hAz')).toEqual({ 1: 'hAz' });
+});
 
-//     // Override
-//     array = {products: "table"};
-//     Arr.set(array, "products.desk.price", 300);
-//     expect(array).toEqual({products: [desk: [price: 300}]]);
+test('sole', () => {
+    expect(Arr.sole(['foo'])).toEqual('foo');
 
-//     array = [1 => "test"];
-//     expect(Arr.set(array, 1, "hAz")).toEqual([1 => "hAz"]);
-// })
+    const array = [{ name: 'foo' }, { name: 'bar' }];
+    expect(Arr.sole(array, (value) => value['name'] === 'foo')).toEqual({ name: 'foo' });
 
-// test("testShuffleProducesDifferentShuffles", () => {
-//     $input = range("a", "z");
-
-//     assertFalse(
-//         Arr.shuffle($input) === Arr.shuffle($input) && Arr.shuffle($input) === Arr.shuffle($input),
-//         "The shuffles produced the same output each time, which shouldn't happen.",
-//     );
-// })
-
-// test("testShuffleActuallyShuffles", () => {
-//     $input = range("a", "z");
-
-//     assertFalse(
-//         Arr.shuffle($input) === $input && Arr.shuffle($input) === $input,
-//         "The shuffles were unshuffled each time, which shouldn't happen.",
-//     );
-// })
-
-// test("testShuffleKeepsSameValues", () => {
-//     $input = range("a", "z");
-//     $shuffled = Arr.shuffle($input);
-//     sort($shuffled);
-
-//     expect($shuffled).toEqual($input);
-// })
-
-// test("testSoleReturnsFirstItemInCollectionIfOnlyOneExists", () => {
-//     expect(Arr.sole(["foo"])).toEqual("foo");
-
-//     array = [{name: "foo"}, {name: "bar"}];
-
-//     expect(Arr.sole(array, fn(array value) => value["name"] === "foo")).toEqual({name: "foo"});
-// })
-
-// test("testSoleThrowsExceptionIfNoItemsExist", () => {
-//     expectException(ItemNotFoundException::class);
-
-//     Arr.sole(["foo"], fn(string value) => value === "baz");
-// })
-
-// test("testSoleThrowsExceptionIfMoreThanOneItemExists", () => {
-//     expectExceptionObject(new MultipleItemsFoundException(2));
-
-//     Arr.sole(["baz", "foo", "baz"], fn(string value) => value === "baz");
-// })
-
-// test("testEmptyShuffle", () => {
-//     expect(Arr.shuffle([])).toEqual([]);
-// })
+    expect(() => Arr.sole(['foo'], (value) => value === 'baz')).toThrow('Item not found');
+    expect(() => Arr.sole(['baz', 'foo', 'baz'], (value) => value === 'baz')).toThrow('Array has more than one item');
+});
 
 // test("testSort", () => {
 //     $unsorted = [{name: "Desk"}, {name: "Chair"}];
