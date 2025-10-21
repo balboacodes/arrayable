@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { Arr } from '../src/Arr';
-import { array_values } from '@balboacodes/php-utils';
+import { array_values, mb_strtoupper } from '@balboacodes/php-utils';
 
 test('accessible', () => {
     expect(Arr.accessible([])).toEqual(true);
@@ -616,311 +616,189 @@ test('only', () => {
     expect(Arr.only({ 0: 'foo', bar: 'baz' }, 'bar')).toEqual({ bar: 'baz' });
 });
 
-test("pluck", () => {
-    data = {
-        post-1: [
-            comments: [
-                tags: ["#foo", "#bar"},
-            ],
-        ],
-        "post-2" => {
-            comments: [
-                tags: ["#baz"},
-            ],
-        ],
+test('pluck', () => {
+    const data = {
+        'post-1': {
+            comments: {
+                tags: ['#foo', '#bar'],
+            },
+        },
+        'post-2': {
+            comments: {
+                tags: ['#baz'],
+            },
+        },
+    };
+
+    expect(Arr.pluck(data, 'comments')).toEqual([{ tags: ['#foo', '#bar'] }, { tags: ['#baz'] }]);
+    expect(Arr.pluck(data, 'comments.tags')).toEqual([['#foo', '#bar'], ['#baz']]);
+    expect(Arr.pluck(data, 'foo')).toEqual([undefined, undefined]);
+    expect(Arr.pluck(data, 'foo.bar')).toEqual([undefined, undefined]);
+
+    let array: any = [{ developer: { name: 'Taylor' } }, { developer: { name: 'Abigail' } }];
+    array = Arr.pluck(array, 'developer.name');
+    expect(array).toEqual(['Taylor', 'Abigail']);
+
+    array = [{ developer: { name: 'Taylor' } }, { developer: { name: 'Abigail' } }];
+    array = Arr.pluck(array, ['developer', 'name']);
+    expect(array).toEqual(['Taylor', 'Abigail']);
+
+    array = [
+        { name: 'Taylor', role: 'developer' },
+        { name: 'Abigail', role: 'developer' },
     ];
 
-    assertEquals(
-        [
-            0 => {
-                tags: ["#foo", "#bar"},
+    const test1 = Arr.pluck(array, 'role', 'name');
+    const test2 = Arr.pluck(array, undefined, 'name');
+
+    expect(test1).toEqual({
+        Taylor: 'developer',
+        Abigail: 'developer',
+    });
+
+    expect(test2).toEqual({
+        Taylor: { name: 'Taylor', role: 'developer' },
+        Abigail: { name: 'Abigail', role: 'developer' },
+    });
+
+    array = [
+        { start: new Date('2017-07-25 00:00:00').toDateString(), end: new Date('2017-07-30 00:00:00').toDateString() },
+    ];
+    array = Arr.pluck(array, 'end', 'start');
+    expect(array).toEqual({ 'Tue Jul 25 2017': 'Sun Jul 30 2017' });
+
+    array = [
+        { name: 'taylor', email: 'foo' },
+        { name: 'dayle', email: 'bar' },
+    ];
+    expect(Arr.pluck(array, 'name')).toEqual(['taylor', 'dayle']);
+    expect(Arr.pluck(array, 'email', 'name')).toEqual({ taylor: 'foo', dayle: 'bar' });
+
+    array = [{ user: ['taylor', 'otwell'] }, { user: ['dayle', 'rees'] }];
+    expect(Arr.pluck(array, 'user.0')).toEqual(['taylor', 'dayle']);
+    expect(Arr.pluck(array, ['user', 0])).toEqual(['taylor', 'dayle']);
+    expect(Arr.pluck(array, 'user.1', 'user.0')).toEqual({ taylor: 'otwell', dayle: 'rees' });
+    expect(Arr.pluck(array, ['user', 1], ['user', 0])).toEqual({ taylor: 'otwell', dayle: 'rees' });
+
+    array = [
+        {
+            account: 'a',
+            users: [{ first: 'taylor', last: 'otwell', email: 'taylorotwell@gmail.com' }],
+        },
+        {
+            account: 'b',
+            users: [
+                { first: 'abigail', last: 'otwell' },
+                { first: 'dayle', last: 'rees' },
             ],
-            1 => {
-                tags: ["#baz"},
-            ],
-        ],
-        Arr.pluck(data, "comments"),
-    );
+        },
+    ];
 
-    expect("#bar"], ["#baz"]], Arr.pluck(data, "comments.tags")).toEqual([["#foo");
-    expect(null], Arr.pluck(data, "foo")).toEqual([null);
-    expect(null], Arr.pluck(data, "foo.bar")).toEqual([null);
+    expect(Arr.pluck(array, 'users.*.first')).toEqual([['taylor'], ['abigail', 'dayle']]);
+    expect(Arr.pluck(array, 'users.*.first', 'account')).toEqual({ a: ['taylor'], b: ['abigail', 'dayle'] });
+    expect(Arr.pluck(array, 'users.*.email')).toEqual([['taylorotwell@gmail.com'], [undefined, undefined]]);
+});
 
-    array = [{developer: [name: "Taylor"}], {developer: [name: "Abigail"}]];
+test('map', () => {
+    let data: any = { first: 'taylor', last: 'otwell' };
+    let mapped = Arr.map(data, (value: string, key) => key + '-' + value.split('').reverse().join(''));
+    expect(mapped).toEqual({ first: 'first-rolyat', last: 'last-llewto' });
+    expect(data).toEqual({ first: 'taylor', last: 'otwell' });
 
-    array = Arr.pluck(array, "developer.name");
+    mapped = Arr.map([], (value, key) => key + '-' + value);
+    expect(mapped).toEqual([]);
 
-    expect("Abigail"], array).toEqual(["Taylor");
-})
+    data = { first: 'taylor', last: undefined };
+    mapped = Arr.map(data, (value, key) => key + '-' + (value ?? ''));
+    expect(mapped).toEqual({ first: 'first-taylor', last: 'last-' });
 
-// test("testPluckWithArrayValue", () => {
-//     array = [{developer: [name: "Taylor"}], {developer: [name: "Abigail"}]];
-//     array = Arr.pluck(array, ["developer", "name"]);
-//     expect("Abigail"], array).toEqual(["Taylor");
-// })
+    data = { first: 'taylor', last: 'otwell' };
+    mapped = Arr.map(data, mb_strtoupper);
+    expect(mapped).toEqual({ first: 'TAYLOR', last: 'OTWELL' });
+    expect(data).toEqual({ first: 'taylor', last: 'otwell' });
+});
 
-// test("testPluckWithKeys", () => {
-//     array = [{name: "Taylor", role: "developer"}, {name: "Abigail", role: "developer"}];
+test('mapWithKeys', () => {
+    let data: any = [
+        { name: 'Blastoise', type: 'Water', idx: 9 },
+        { name: 'Charmander', type: 'Fire', idx: 4 },
+        { name: 'Dragonair', type: 'Dragon', idx: 148 },
+    ];
 
-//     $test1 = Arr.pluck(array, "role", "name");
-//     $test2 = Arr.pluck(array, null, "name");
+    data = Arr.mapWithKeys(data, (pokemon) => ({ [pokemon['name']]: pokemon['type'] }));
 
-//     assertEquals(
-//         {
-//             Taylor: "developer",
-//             Abigail: "developer",
-//         },
-//         $test1,
-//     );
+    expect(data).toEqual({ Blastoise: 'Water', Charmander: 'Fire', Dragonair: 'Dragon' });
+});
 
-//     assertEquals(
-//         {
-//             Taylor: [name: "Taylor", role: "developer"},
-//             "Abigail" => {name: "Abigail", role: "developer"},
-//         ],
-//         $test2,
-//     );
-// })
+test('testMapSpread', () => {
+    const c = [
+        [1, 'a'],
+        [2, 'b'],
+    ];
 
-// test("testPluckWithCarbonKeys", () => {
-//     array = [{start: new Carbon("2017-07-25 00:00:00"), end: new Carbon("2017-07-30 00:00:00")}];
-//     array = Arr.pluck(array, "end", "start");
-//     expect(array).toEqual({2017-07-25 00:00:00: "2017-07-30 00:00:00"});
-// })
+    let result = Arr.mapSpread(c, (number, character) => `${number}-${character}`);
+    expect(result).toEqual(['1-a', '2-b']);
 
-// test("testArrayPluckWithArrayAndObjectValues", () => {
-//     array = [ {name: "taylor", email: "foo"}, {name: "dayle", email: "bar"}];
-//     expect("dayle"], Arr.pluck(array, "name")).toEqual(["taylor");
-//     expect(dayle: "bar"}, Arr.pluck(array, "email", "name")).toEqual({taylor: "foo");
-// })
+    result = Arr.mapSpread(c, (number, character, key) => `${number}-${character}-${key}`);
+    expect(result).toEqual(['1-a-0', '2-b-1']);
+});
 
-// test("testArrayPluckWithNestedKeys", () => {
-//     array = [{user: ["taylor", "otwell"}], {user: ["dayle", "rees"}]];
-//     expect("dayle"], Arr.pluck(array, "user.0")).toEqual(["taylor");
-//     expect("dayle"], Arr.pluck(array, ["user", 0])).toEqual(["taylor");
-//     expect(dayle: "rees"}, Arr.pluck(array, "user.1", "user.0")).toEqual({taylor: "otwell");
-//     expect(dayle: "rees"}, Arr.pluck(array, ["user", 1], ["user", 0])).toEqual({taylor: "otwell");
-// })
+test('prepend', () => {
+    let array: any = Arr.prepend(['one', 'two', 'three', 'four'], 'zero');
+    expect(array).toEqual(['zero', 'one', 'two', 'three', 'four']);
 
-// test("testArrayPluckWithNestedArrays", () => {
-//     array = [
-//         {
-//             account: "a",
-//             users: [[first: "taylor", last: "otwell", email: "taylorotwell@gmail.com"}],
-//         ],
-//         {
-//             account: "b",
-//             users: [[first: "abigail", last: "otwell"}, {first: "dayle", last: "rees"}],
-//         ],
-//     ];
+    array = Arr.prepend({ one: 1, two: 2 }, 0, 'zero');
+    expect(array).toEqual({ zero: 0, one: 1, two: 2 });
 
-//     expect(["abigail", "dayle"]], Arr.pluck(array, "users.*.first")).toEqual([["taylor"]);
-//     assertEquals(
-//         {a: ["taylor"}, "b" => ["abigail", "dayle"]],
-//         Arr.pluck(array, "users.*.first", "account"),
-//     );
-//     expect([null, null]], Arr.pluck(array, "users.*.email")).toEqual([["taylorotwell@gmail.com"]);
-// })
+    array = Arr.prepend({ one: 1, two: 2 }, 0, undefined);
+    expect(array).toEqual({ 0: 0, one: 1, two: 2 });
 
-// test("testMap", () => {
-//     data = {first: "taylor", last: "otwell"};
-//     $mapped = Arr.map(data, function (value, key) {
-//         return key . "-" . strrev(value);
-//     });
-//     expect(last: "last-llewto"}, $mapped).toEqual({first: "first-rolyat");
-//     expect(last: "otwell"}, data).toEqual({first: "taylor");
-// })
+    array = Arr.prepend(['one', 'two'], null, undefined);
+    expect(array).toEqual([null, 'one', 'two']);
 
-// test("testMapWithEmptyArray", () => {
-//     $mapped = Arr.map([], static function (value, key) {
-//         return key . "-" . value;
-//     });
-//     expect($mapped).toEqual([]);
-// })
+    array = Arr.prepend([], 'zero');
+    expect(array).toEqual(['zero']);
 
-// test("testMapNullValues", () => {
-//     data = {first: "taylor", last: null};
-//     $mapped = Arr.map(data, static function (value, key) {
-//         return key . "-" . value;
-//     });
-//     expect(last: "last-"}, $mapped).toEqual({first: "first-taylor");
-// })
+    array = Arr.prepend([''], 'zero');
+    expect(array).toEqual(['zero', '']);
 
-// test("testMapWithKeys", () => {
-//     data = [
-//         {name: "Blastoise", type: "Water", idx: 9},
-//         {name: "Charmander", type: "Fire", idx: 4},
-//         {name: "Dragonair", type: "Dragon", idx: 148},
-//     ];
+    array = Arr.prepend(['one', 'two'], ['zero']);
+    expect(array).toEqual([['zero'], 'one', 'two']);
+});
 
-//     data = Arr.mapWithKeys(data, function ($pokemon) {
-//         return [$pokemon["name"] => $pokemon["type"]];
-//     });
+test('pull', () => {
+    let array: any = { name: 'Desk', price: 100 };
+    let name = Arr.pull(array, 'name');
+    expect(name).toEqual('Desk');
+    expect(array).toEqual({ price: 100 });
 
-//     expect(Charmander: "Fire", Dragonair: "Dragon"}, data).toEqual({Blastoise: "Water");
-// })
+    // Only works on first level keys
+    array = { 'joe@example.com': 'Joe', 'jane@localhost': 'Jane' };
+    name = Arr.pull(array, 'joe@example.com');
+    expect(name).toEqual('Joe');
+    expect(array).toEqual({ 'jane@localhost': 'Jane' });
 
-// test("testMapByReference", () => {
-//     data = {first: "taylor", last: "otwell"};
-//     $mapped = Arr.map(data, "strrev");
+    // Does not work for nested keys
+    array = { emails: { 'joe@example.com': 'Joe', 'jane@localhost': 'Jane' } };
+    name = Arr.pull(array, 'emails.joe@example.com');
+    expect(name).toEqual(undefined);
+    expect(array).toEqual({ emails: { 'joe@example.com': 'Joe', 'jane@localhost': 'Jane' } });
 
-//     expect(last: "llewto"}, $mapped).toEqual({first: "rolyat");
-//     expect(last: "otwell"}, data).toEqual({first: "taylor");
-// })
+    // Works with int keys
+    array = ['First', 'Second'];
+    const first = Arr.pull(array, 0);
+    expect(first).toEqual('First');
+    expect(array).toEqual(['Second']);
+});
 
-// test("testMapSpread", () => {
-//     $c = [[1, "a"], [2, "b"]];
-
-//     $result = Arr.mapSpread($c, function ($number, $character) {
-//         return "{$number}-{$character}";
-//     });
-//     expect("2-b"], $result).toEqual(["1-a");
-
-//     $result = Arr.mapSpread($c, function ($number, $character, key) {
-//         return "{$number}-{$character}-{key}";
-//     });
-//     expect("2-b-1"], $result).toEqual(["1-a-0");
-// })
-
-// test("testPrepend", () => {
-//     array = Arr.prepend(["one", "two", "three", "four"], "zero");
-//     expect("one", "two", "three", "four"], array).toEqual(["zero");
-
-//     array = Arr.prepend({one: 1, two: 2}, 0, "zero");
-//     expect(one: 1, two: 2}, array).toEqual({zero: 0);
-
-//     array = Arr.prepend({one: 1, two: 2}, 0, null);
-//     expect("one" => 1, "two" => 2], array).toEqual([null => 0);
-
-//     array = Arr.prepend(["one", "two"], null, "");
-//     expect("one", "two"], array).toEqual(["" => null);
-
-//     array = Arr.prepend([], "zero");
-//     expect(array).toEqual(["zero"]);
-
-//     array = Arr.prepend([""], "zero");
-//     expect(""], array).toEqual(["zero");
-
-//     array = Arr.prepend(["one", "two"], ["zero"]);
-//     expect("one", "two"], array).toEqual([["zero"]);
-
-//     array = Arr.prepend(["one", "two"], ["zero"], "key");
-//     expect("one", "two"], array).toEqual({key: ["zero"});
-// })
-
-// test("testPull", () => {
-//     array = {name: "Desk", price: 100};
-//     $name = Arr.pull(array, "name");
-//     expect($name).toEqual("Desk");
-//     expect(array).toEqual({price: 100});
-
-//     // Only works on first level keys
-//     array = {joe@example.com: "Joe", jane@localhost: "Jane"};
-//     $name = Arr.pull(array, "joe@example.com");
-//     expect($name).toEqual("Joe");
-//     expect(array).toEqual({jane@localhost: "Jane"});
-
-//     // Does not work for nested keys
-//     array = {emails: [joe@example.com: "Joe", jane@localhost: "Jane"}];
-//     $name = Arr.pull(array, "emails.joe@example.com");
-//     expect($name).toEqual(undefined);
-//     expect(jane@localhost: "Jane"}], array).toEqual({emails: [joe@example.com: "Joe");
-
-//     // Works with int keys
-//     array = ["First", "Second"];
-//     $first = Arr.pull(array, 0);
-//     expect($first).toEqual("First");
-//     expect(array).toEqual([1 => "Second"]);
-// })
-
-// test("testQuery", () => {
-//     expect(Arr.query([])).toEqual("");
-//     expect(Arr.query({foo: "bar"})).toEqual("foo=bar");
-//     expect(Arr.query({foo: "bar", bar: "baz"})).toEqual("foo=bar&bar=baz");
-//     expect(Arr.query({foo: "bar", bar: true})).toEqual("foo=bar&bar=1");
-//     expect(Arr.query({foo: "bar", bar: null})).toEqual("foo=bar");
-//     expect(Arr.query({foo: "bar", bar: ""})).toEqual("foo=bar&bar=");
-// })
-
-// test("testRandom", () => {
-//     $random = Arr.random(["foo", "bar", "baz"]);
-//     assertContains($random, ["foo", "bar", "baz"]);
-
-//     $random = Arr.random(["foo", "bar", "baz"], 0);
-//     assertIsArray($random);
-//     assertCount(0, $random);
-
-//     $random = Arr.random(["foo", "bar", "baz"], 1);
-//     assertIsArray($random);
-//     assertCount(1, $random);
-//     assertContains($random[0], ["foo", "bar", "baz"]);
-
-//     $random = Arr.random(["foo", "bar", "baz"], 2);
-//     assertIsArray($random);
-//     assertCount(2, $random);
-//     assertContains($random[0], ["foo", "bar", "baz"]);
-//     assertContains($random[1], ["foo", "bar", "baz"]);
-
-//     $random = Arr.random(["foo", "bar", "baz"], "0");
-//     assertIsArray($random);
-//     assertCount(0, $random);
-
-//     $random = Arr.random(["foo", "bar", "baz"], "1");
-//     assertIsArray($random);
-//     assertCount(1, $random);
-//     assertContains($random[0], ["foo", "bar", "baz"]);
-
-//     $random = Arr.random(["foo", "bar", "baz"], "2");
-//     assertIsArray($random);
-//     assertCount(2, $random);
-//     assertContains($random[0], ["foo", "bar", "baz"]);
-//     assertContains($random[1], ["foo", "bar", "baz"]);
-
-//     // preserve keys
-//     $random = Arr.random({one: "foo", two: "bar", three: "baz"}, 2, true);
-//     assertIsArray($random);
-//     assertCount(2, $random);
-//     assertCount(2, array_intersect_assoc({one: "foo", two: "bar", three: "baz"}, $random));
-// })
-
-// test("testRandomNotIncrementingKeys", () => {
-//     $random = Arr.random({foo: "foo", bar: "bar", baz: "baz"});
-//     assertContains($random, ["foo", "bar", "baz"]);
-// })
-
-// test("testRandomOnEmptyArray", () => {
-//     $random = Arr.random([], 0);
-//     assertIsArray($random);
-//     assertCount(0, $random);
-
-//     $random = Arr.random([], "0");
-//     assertIsArray($random);
-//     assertCount(0, $random);
-// })
-
-// test("testRandomThrowsAnErrorWhenRequestingMoreItemsThanAreAvailable", () => {
-//     $exceptions = 0;
-
-//     try {
-//         Arr.random([]);
-//     } catch (InvalidArgumentException) {
-//         $exceptions++;
-//     }
-
-//     try {
-//         Arr.random([], 1);
-//     } catch (InvalidArgumentException) {
-//         $exceptions++;
-//     }
-
-//     try {
-//         Arr.random([], 2);
-//     } catch (InvalidArgumentException) {
-//         $exceptions++;
-//     }
-
-//     expect($exceptions).toEqual(3);
-// })
+test('query', () => {
+    expect(Arr.query([])).toEqual('');
+    expect(Arr.query({ foo: 'bar' })).toEqual('foo=bar');
+    expect(Arr.query({ foo: 'bar', bar: 'baz' })).toEqual('foo=bar&bar=baz');
+    expect(Arr.query({ foo: 'bar', bar: true })).toEqual('foo=bar&bar=1');
+    expect(Arr.query({ foo: 'bar', bar: null })).toEqual('foo=bar');
+    expect(Arr.query({ foo: 'bar', bar: '' })).toEqual('foo=bar&bar=');
+});
 
 // test("testSet", () => {
 //     array = {products: [desk: [price: 100}]];

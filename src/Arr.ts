@@ -1,6 +1,6 @@
 // prettier-ignore
 import {
-    abs, array_all, array_any, array_filter, array_find_key, array_first, array_flip, array_intersect_key, array_is_list, array_keys, array_last, array_map, array_merge, array_pop, array_push, array_reverse, array_shift, array_slice, array_unshift, array_values, count, empty, explode, http_build_query, implode, isset, PHP_QUERY_RFC3986, rsort, sort, SORT_FLAG_CASE, SORT_NATURAL, SORT_NUMERIC, SORT_REGULAR, SORT_STRING, str_contains,
+    abs, array_all, array_any, array_combine, array_filter, array_find_key, array_first, array_flip, array_intersect_key, array_is_list, array_keys, array_last, array_map, array_merge, array_pop, array_push, array_reverse, array_shift, array_slice, array_unshift, array_values, count, empty, explode, http_build_query, implode, isset, PHP_QUERY_RFC3986, rsort, sort, SORT_FLAG_CASE, SORT_NATURAL, SORT_NUMERIC, SORT_REGULAR, SORT_STRING, str_contains,
     unset
 } from '@balboacodes/php-utils';
 import { data_get, value } from './helpers';
@@ -168,11 +168,11 @@ export class Arr {
     /**
      * Return the first element in an array passing a given truth test.
      */
-    public static first<TValue, TFirstDefault>(
-        array: TValue[] | Record<string, TValue>,
-        callback?: (value: TValue, key: number | string) => boolean,
-        defaultValue?: TFirstDefault | (() => TFirstDefault),
-    ): TValue | TFirstDefault | undefined {
+    public static first(
+        array: any[] | Record<string, any>,
+        callback?: (value: any, key: number | string) => boolean,
+        defaultValue?: any | (() => any),
+    ): any {
         if (callback === undefined) {
             if (empty(array)) {
                 return value(defaultValue);
@@ -438,11 +438,11 @@ export class Arr {
     /**
      * Return the last element in an array passing a given truth test.
      */
-    public static last<TValue, TLastDefault>(
-        array: TValue[] | Record<string, TValue>,
-        callback?: (value: TValue, key: number | string) => boolean,
-        defaultValue?: TLastDefault | (() => TLastDefault),
-    ): TValue | TLastDefault | undefined {
+    public static last(
+        array: any[] | Record<string, any>,
+        callback?: (value: any, key: number | string) => boolean,
+        defaultValue?: any | (() => any),
+    ): any {
         if (callback === undefined) {
             return empty(array) ? value(defaultValue) : array_last(array);
         }
@@ -457,7 +457,7 @@ export class Arr {
         array: any[] | Record<string, any>,
         callback: (value: any, key?: number | string) => any,
     ): any[] | Record<string, any> {
-        const keys = array_keys(array);
+        const keys = array_keys(array); // [0, 1]
         let items: any[] | Record<string, any>;
 
         try {
@@ -492,9 +492,9 @@ export class Arr {
      *
      * The callback should return an object with a single key: value pair.
      */
-    public static mapWithKeys<TValue, TMapWithKeysValue>(
-        array: TValue[] | Record<string, TValue>,
-        callback: (value: TValue, key?: number | string) => Record<string, TMapWithKeysValue>,
+    public static mapWithKeys(
+        array: any[] | Record<string, any>,
+        callback: (value: any, key?: number | string) => Record<string, any>,
     ): Record<string, any> {
         const result: Record<string, any> = {};
 
@@ -522,12 +522,12 @@ export class Arr {
     /**
      * Partition the array into two arrays using the given callback.
      */
-    public static partition<TValue>(
-        array: TValue[] | Record<string, TValue>,
-        callback: (value: TValue, key: number | string) => boolean,
-    ): (TValue[] | Record<string, TValue>)[] {
-        const passed: TValue[] | Record<string, TValue> = Array.isArray(array) ? [] : {};
-        const failed: TValue[] | Record<string, TValue> = Array.isArray(array) ? [] : {};
+    public static partition(
+        array: any[] | Record<string, any>,
+        callback: (value: any, key: number | string) => boolean,
+    ): (any[] | Record<string, any>)[] {
+        const passed: any[] | Record<string, any> = Array.isArray(array) ? [] : {};
+        const failed: any[] | Record<string, any> = Array.isArray(array) ? [] : {};
 
         Object.entries(array).forEach(([key, item]) => {
             const passedLength = Object.values(passed).length;
@@ -574,11 +574,17 @@ export class Arr {
 
     /**
      * Push an item onto the beginning of an array.
-     *
-     * @param key is not used because it only accepts an array as the first parameter.
      */
-    public static prepend(array: any[], value: any, _key?: number | string): any[] {
-        array_unshift(array, value);
+    public static prepend(
+        array: any[] | Record<string, any>,
+        value: any,
+        key?: number | string,
+    ): any[] | Record<string, any> {
+        if (key === undefined) {
+            array_unshift(array, value);
+        } else {
+            (array as any)[key] = value;
+        }
 
         return array;
     }
