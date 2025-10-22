@@ -563,9 +563,9 @@ test('every', () => {
 });
 
 test('some', () => {
-    expect(Arr.some([1, 2], (value, key) => typeof value === 'string')).toEqual(false);
-    expect(Arr.some(['foo', 2], (value, key) => typeof value === 'string')).toEqual(true);
-    expect(Arr.some(['foo', 'bar'], (value, key) => typeof value === 'string')).toEqual(true);
+    expect(Arr.some([1, 2], (value) => typeof value === 'string')).toEqual(false);
+    expect(Arr.some(['foo', 2], (value) => typeof value === 'string')).toEqual(true);
+    expect(Arr.some(['foo', 'bar'], (value) => typeof value === 'string')).toEqual(true);
 });
 
 test('isAssoc', () => {
@@ -843,256 +843,189 @@ test('sole', () => {
     expect(() => Arr.sole(['baz', 'foo', 'baz'], (value) => value === 'baz')).toThrow('Array has more than one item');
 });
 
-// test("testSort", () => {
-//     $unsorted = [{name: "Desk"}, {name: "Chair"}];
+test('sortRecursive', () => {
+    const array = {
+        users: [
+            {
+                // should sort associative arrays by keys
+                name: 'joe',
+                mail: 'joe@example.com',
+                // should sort deeply nested arrays
+                numbers: [2, 1, 0],
+            },
+            { name: 'jane', age: 25 },
+        ],
+        repositories: [
+            // should use weird `sort()` behavior on arrays of arrays
+            { id: 1 },
+            { id: 0 },
+        ],
+        // should sort non-associative arrays by value
+        20: [2, 1, 0],
+        30: {
+            2: 'a',
+            1: 'b',
+            0: 'c',
+        },
+    };
 
-//     $expected = [{name: "Chair"}, {name: "Desk"}];
+    const expected = {
+        20: [0, 1, 2],
+        30: { 0: 'a', 1: 'b', 2: 'c' },
+        repositories: [{ id: 0 }, { id: 1 }],
+        users: [
+            { age: 25, name: 'jane' },
+            { mail: 'joe@example.com', name: 'joe', numbers: [0, 1, 2] },
+        ],
+    };
 
-//     $sorted = array_values(Arr.sort($unsorted));
-//     expect($sorted).toEqual($expected);
+    expect(Arr.sortRecursive(array)).toEqual(expected);
+});
 
-//     // sort with closure
-//     $sortedWithClosure = array_values(
-//         Arr.sort($unsorted, function (value) {
-//             return value["name"];
-//         }),
-//     );
-//     expect($sortedWithClosure).toEqual($expected);
+test('sortRecursiveDesc', () => {
+    const array = {
+        empty: [],
+        nested: {
+            level1: {
+                level2: {
+                    level3: [2, 3, 1],
+                },
+                values: [4, 5, 6],
+            },
+        },
+        mixed: {
+            a: 1,
+            2: 'b',
+            c: 3,
+            1: 'd',
+        },
+        numbered_index: {
+            1: 'e',
+            3: 'c',
+            4: 'b',
+            5: 'a',
+            2: 'd',
+        },
+    };
 
-//     // sort with dot notation
-//     $sortedWithDotNotation = array_values(Arr.sort($unsorted, "name"));
-//     expect($sortedWithDotNotation).toEqual($expected);
-// })
+    const expected = {
+        empty: [],
+        mixed: {
+            c: 3,
+            a: 1,
+            2: 'b',
+            1: 'd',
+        },
+        nested: {
+            level1: {
+                values: [6, 5, 4],
+                level2: {
+                    level3: [3, 2, 1],
+                },
+            },
+        },
+        numbered_index: {
+            5: 'a',
+            4: 'b',
+            3: 'c',
+            2: 'd',
+            1: 'e',
+        },
+    };
 
-// test("testSortDesc", () => {
-//     $unsorted = [{name: "Chair"}, {name: "Desk"}];
+    expect(Arr.sortRecursiveDesc(array)).toEqual(expected);
+});
 
-//     $expected = [{name: "Desk"}, {name: "Chair"}];
+test('toCssClasses', () => {
+    let classes = Arr.toCssClasses(['font-bold', 'mt-4']);
 
-//     $sorted = array_values(Arr.sortDesc($unsorted));
-//     expect($sorted).toEqual($expected);
+    expect(classes).toEqual('font-bold mt-4');
 
-//     // sort with closure
-//     $sortedWithClosure = array_values(
-//         Arr.sortDesc($unsorted, function (value) {
-//             return value["name"];
-//         }),
-//     );
-//     expect($sortedWithClosure).toEqual($expected);
+    classes = Arr.toCssClasses({ 0: 'font-bold', 1: 'mt-4', 'ml-2': true, 'mr-2': false });
 
-//     // sort with dot notation
-//     $sortedWithDotNotation = array_values(Arr.sortDesc($unsorted, "name"));
-//     expect($sortedWithDotNotation).toEqual($expected);
-// })
+    expect(classes).toEqual('font-bold mt-4 ml-2');
+});
 
-// test("testSortRecursive", () => {
-//     array = {
-//         users: [
-//             [
-//                 // should sort associative arrays by keys
-//                 name: "joe",
-//                 mail: "joe@example.com",
-//                 // should sort deeply nested arrays
-//                 numbers: [2, 1, 0},
-//             ],
-//             {
-//                 name: "jane",
-//                 age: 25,
-//             },
-//         ],
-//         "repositories" => [
-//             // should use weird `sort()` behavior on arrays of arrays
-//             {id: 1},
-//             {id: 0},
-//         ],
-//         // should sort non-associative arrays by value
-//         20 => [2, 1, 0],
-//         30 => [
-//             // should sort non-incrementing numerical keys by keys
-//             2 => "a",
-//             1 => "b",
-//             0 => "c",
-//         ],
-//     ];
+test('toCssStyles', () => {
+    let styles = Arr.toCssStyles(['font-weight: bold', 'margin-top: 4px;']);
 
-//     $expect = [
-//         20 => [0, 1, 2],
-//         30 => [
-//             0 => "c",
-//             1 => "b",
-//             2 => "a",
-//         ],
-//         "repositories" => [{id: 0}, {id: 1}],
-//         "users" => [
-//             {
-//                 age: 25,
-//                 name: "jane",
-//             },
-//             {
-//                 mail: "joe@example.com",
-//                 name: "joe",
-//                 numbers: [0, 1, 2},
-//             ],
-//         ],
-//     ];
+    expect(styles).toEqual('font-weight: bold; margin-top: 4px;');
 
-//     expect(Arr.sortRecursive(array)).toEqual($expect);
-// })
+    styles = Arr.toCssStyles({
+        0: 'font-weight: bold;',
+        1: 'margin-top: 4px',
+        'margin-left: 2px;': true,
+        'margin-right: 2px': false,
+    });
 
-// test("testSortRecursiveDesc", () => {
-//     array = {
-//         empty: [},
-//         "nested" => {
-//             level1: [
-//                 level2: [
-//                     level3: [2, 3, 1},
-//                 ],
-//                 "values" => [4, 5, 6],
-//             ],
-//         ],
-//         "mixed" => {
-//             a: 1,
-//             2 => "b",
-//             c: 3,
-//             1 => "d",
-//         },
-//         "numbered_index" => [
-//             1 => "e",
-//             3 => "c",
-//             4 => "b",
-//             5 => "a",
-//             2 => "d",
-//         ],
-//     ];
+    expect(styles).toEqual('font-weight: bold; margin-top: 4px; margin-left: 2px;');
+});
 
-//     $expect = {
-//         empty: [},
-//         "mixed" => {
-//             c: 3,
-//             a: 1,
-//             2 => "b",
-//             1 => "d",
-//         },
-//         "nested" => {
-//             level1: [
-//                 values: [6, 5, 4},
-//                 "level2" => {
-//                     level3: [3, 2, 1},
-//                 ],
-//             ],
-//         ],
-//         "numbered_index" => [
-//             5 => "a",
-//             4 => "b",
-//             3 => "c",
-//             2 => "d",
-//             1 => "e",
-//         ],
-//     ];
+test('where', () => {
+    let array: any = [100, '200', 300, '400', 500];
+    array = Arr.where(array, (value) => typeof value === 'string');
+    expect(array).toEqual(['200', '400']);
 
-//     expect(Arr.sortRecursiveDesc(array)).toEqual($expect);
-// })
+    array = { 10: 1, foo: 3, 20: 2 };
+    array = Arr.where(array, (_, key) => !isNaN(Number(key)));
+    expect(array).toEqual({ 10: 1, 20: 2 });
+});
 
-// test("testToCssClasses", () => {
-//     $classes = Arr.toCssClasses(["font-bold", "mt-4"]);
+test('forget', () => {
+    let array: any = { products: { desk: { price: 100 } } };
+    Arr.forget(array, []);
+    expect(array).toEqual({ products: { desk: { price: 100 } } });
 
-//     expect($classes).toEqual("font-bold mt-4");
+    array = { products: { desk: { price: 100 } } };
+    Arr.forget(array, 'products.desk');
+    expect(array).toEqual({ products: {} });
 
-//     $classes = Arr.toCssClasses({"font-bold", "mt-4", ml-2: true, mr-2: false});
+    array = { products: { desk: { price: 100 } } };
+    Arr.forget(array, 'products.desk.price');
+    expect(array).toEqual({ products: { desk: {} } });
 
-//     expect($classes).toEqual("font-bold mt-4 ml-2");
-// })
+    array = { products: { desk: { price: 100 } } };
+    Arr.forget(array, 'products.final.price');
+    expect(array).toEqual({ products: { desk: { price: 100 } } });
 
-// test("testToCssStyles", () => {
-//     $styles = Arr.toCssStyles(["font-weight: bold", "margin-top: 4px;"]);
+    array = { shop: { cart: { 150: 0 } } };
+    Arr.forget(array, 'shop.final.cart');
+    expect(array).toEqual({ shop: { cart: { 150: 0 } } });
 
-//     expect($styles).toEqual("font-weight: bold; margin-top: 4px;");
+    array = {
+        products: { desk: { price: { original: 50, taxes: 60 } } },
+    };
+    Arr.forget(array, 'products.desk.price.taxes');
+    expect(array).toEqual({ products: { desk: { price: { original: 50 } } } });
 
-//     $styles = Arr.toCssStyles([
-//         "font-weight: bold;",
-//         "margin-top: 4px",
-//         "margin-left: 2px;" => true,
-//         "margin-right: 2px" => false,
-//     ]);
+    array = {
+        products: { desk: { price: { original: 50, taxes: 60 } } },
+    };
+    Arr.forget(array, 'products.desk.final.taxes');
+    expect(array).toEqual({ products: { desk: { price: { original: 50, taxes: 60 } } } });
 
-//     expect($styles).toEqual("font-weight: bold; margin-top: 4px; margin-left: 2px;");
-// })
+    array = { products: { desk: { price: 50 }, null: 'something' } };
+    Arr.forget(array, ['products.amount.all', 'products.desk.price']);
+    expect(array).toEqual({ products: { desk: {}, null: 'something' } });
 
-// test("testWhere", () => {
-//     array = [100, "200", 300, "400", 500];
+    // Only works on first level keys
+    array = { 'joe@example.com': 'Joe', 'jane@example.com': 'Jane' };
+    Arr.forget(array, 'joe@example.com');
+    expect(array).toEqual({ 'jane@example.com': 'Jane' });
 
-//     array = Arr.where(array, function (value, key) {
-//         return is_string(value);
-//     });
+    // Does not work for nested keys
+    array = { emails: { 'joe@example.com': { name: 'Joe' }, 'jane@localhost': { name: 'Jane' } } };
+    Arr.forget(array, ['emails.joe@example.com', 'emails.jane@localhost']);
+    expect(array).toEqual({ emails: { 'joe@example.com': { name: 'Joe' } } });
 
-//     expect(3 => "400"], array).toEqual([1 => "200");
-// })
+    array = { name: 'hAz', 1: 'test', 2: 'bAz' };
+    Arr.forget(array, 1);
+    expect(array).toEqual({ name: 'hAz', 2: 'bAz' });
 
-// test("testWhereKey", () => {
-//     array = {10: 1, foo: 3, 20 => 2};
-
-//     array = Arr.where(array, function (value, key) {
-//         return is_numeric(key);
-//     });
-
-//     expect(20 => 2}, array).toEqual({10: 1);
-// })
-
-// test("testForget", () => {
-//     array = {products: [desk: [price: 100}]];
-//     Arr.forget(array, null);
-//     expect(array).toEqual({products: [desk: [price: 100}]]);
-
-//     array = {products: [desk: [price: 100}]];
-//     Arr.forget(array, []);
-//     expect(array).toEqual({products: [desk: [price: 100}]]);
-
-//     array = {products: [desk: [price: 100}]];
-//     Arr.forget(array, "products.desk");
-//     expect(array).toEqual({products: [}]);
-
-//     array = {products: [desk: [price: 100}]];
-//     Arr.forget(array, "products.desk.price");
-//     expect(array).toEqual({products: [desk: [}]]);
-
-//     array = {products: [desk: [price: 100}]];
-//     Arr.forget(array, "products.final.price");
-//     expect(array).toEqual({products: [desk: [price: 100}]]);
-
-//     array = {shop: [cart: [150 => 0}]];
-//     Arr.forget(array, "shop.final.cart");
-//     expect(array).toEqual({shop: [cart: [150 => 0}]]);
-
-//     array = {products: [desk: [price: [original: 50, taxes: 60}]]];
-//     Arr.forget(array, "products.desk.price.taxes");
-//     expect(array).toEqual({products: [desk: [price: [original: 50}]]]);
-
-//     array = {products: [desk: [price: [original: 50, taxes: 60}]]];
-//     Arr.forget(array, "products.desk.final.taxes");
-//     expect(taxes: 60}]]], array).toEqual({products: [desk: [price: [original: 50);
-
-//     array = {products: [desk: [price: 50}, null => "something"]];
-//     Arr.forget(array, ["products.amount.all", "products.desk.price"]);
-//     expect(null => "something"]], array).toEqual({products: [desk: [});
-
-//     // Only works on first level keys
-//     array = {joe@example.com: "Joe", jane@example.com: "Jane"};
-//     Arr.forget(array, "joe@example.com");
-//     expect(array).toEqual({jane@example.com: "Jane"});
-
-//     // Does not work for nested keys
-//     array = {emails: [joe@example.com: [name: "Joe"}, "jane@localhost" => {name: "Jane"}]];
-//     Arr.forget(array, ["emails.joe@example.com", "emails.jane@localhost"]);
-//     expect(array).toEqual({emails: [joe@example.com: [name: "Joe"}]]);
-
-//     array = {name: "hAz", 1: "test", 2 => "bAz"};
-//     Arr.forget(array, 1);
-//     expect(2 => "bAz"}, array).toEqual({name: "hAz");
-
-//     array = [2 => [1 => "products", 3 => "users"]];
-//     Arr.forget(array, 2.3);
-//     expect(array).toEqual([2 => [1 => "products"]]);
-// })
+    array = { 2: { 1: 'products', 3: 'users' } };
+    Arr.forget(array, 2.3);
+    expect(array).toEqual({ 2: { 1: 'products' } });
+});
 
 // test("testFrom", () => {
 //     expect(Arr.from({foo: "bar"})).toEqual({foo: "bar"});

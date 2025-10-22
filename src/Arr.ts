@@ -1,6 +1,6 @@
 // prettier-ignore
 import {
-    abs, array_all, array_any, array_combine, array_filter, array_find_key, array_first, array_flip, array_intersect_key, array_is_list, array_keys, array_last, array_map, array_merge, array_pop, array_push, array_reverse, array_shift, array_slice, array_unshift, array_values, count, empty, explode, http_build_query, implode, isset, PHP_QUERY_RFC3986, rsort, sort, SORT_FLAG_CASE, SORT_NATURAL, SORT_NUMERIC, SORT_REGULAR, SORT_STRING, str_contains,
+    abs, array_all, array_any, array_combine, array_filter, ARRAY_FILTER_USE_BOTH, array_find_key, array_first, array_flip, array_intersect_key, array_is_list, array_keys, array_last, array_map, array_merge, array_pop, array_push, array_reverse, array_shift, array_slice, array_unshift, array_values, count, empty, explode, http_build_query, implode, isset, krsort, ksort, PHP_QUERY_RFC3986, rsort, sort, SORT_FLAG_CASE, SORT_NATURAL, SORT_NUMERIC, SORT_REGULAR, SORT_STRING, str_contains,
     unset
 } from '@balboacodes/php-utils';
 import { data_get, value } from './helpers';
@@ -749,22 +749,20 @@ export class Arr {
      */
     public static sortRecursive(
         array: any[] | Record<string, any>,
-        options: (
-            | typeof SORT_REGULAR
-            | typeof SORT_NUMERIC
-            | typeof SORT_STRING
-            | typeof SORT_NATURAL
-            | typeof SORT_FLAG_CASE
-        )[] = [SORT_REGULAR],
+        options: (typeof SORT_REGULAR | typeof SORT_NUMERIC | typeof SORT_STRING)[] = [SORT_REGULAR],
         descending: boolean = false,
     ): any[] | Record<string, any> {
         for (let value of Object.values(array)) {
-            if (Array.isArray(value)) {
+            if (Arr.accessible(value)) {
                 value = Arr.sortRecursive(value, options, descending);
             }
         }
 
-        descending ? rsort(array, options) : sort(array, options);
+        if (!array_is_list(array)) {
+            descending ? krsort(array, options[0]) : ksort(array, options[0]);
+        } else {
+            descending ? rsort(array, options) : sort(array, options);
+        }
 
         return array;
     }
@@ -774,13 +772,7 @@ export class Arr {
      */
     public static sortRecursiveDesc(
         array: any[] | Record<string, any>,
-        options: (
-            | typeof SORT_REGULAR
-            | typeof SORT_NUMERIC
-            | typeof SORT_STRING
-            | typeof SORT_NATURAL
-            | typeof SORT_FLAG_CASE
-        )[] = [SORT_REGULAR],
+        options: (typeof SORT_REGULAR | typeof SORT_NUMERIC | typeof SORT_STRING)[] = [SORT_REGULAR],
     ): any[] | Record<string, any> {
         return Arr.sortRecursive(array, options, true);
     }
@@ -814,21 +806,34 @@ export class Arr {
     /**
      * Compile classes from an array into a CSS class list.
      */
-    public static toCssClasses(array: any[] | string): string {
+    public static toCssClasses(array: string[] | Record<string, boolean | string> | string): string {
         const classList = Arr.wrap(array);
+        const classes: string[] = [];
 
-        return implode(' ', classList);
+        for (const [className, constraint] of Object.entries(classList)) {
+            if (!isNaN(Number(className))) {
+                classes.push(constraint);
+            } else if (constraint) {
+                classes.push(className);
+            }
+        }
+
+        return implode(' ', classes);
     }
 
     /**
      * Compile styles from an array into a style list.
      */
-    public static toCssStyles(array: any[] | string): string {
+    public static toCssStyles(array: any[] | Record<string, boolean | string> | string): string {
         const styleList = Arr.wrap(array);
         const styles = [];
 
-        for (const style of styleList) {
-            styles.push(Str.finish(style, ';'));
+        for (const [style, constraint] of Object.entries(styleList)) {
+            if (!isNaN(Number(style))) {
+                styles.push(Str.finish(constraint, ';'));
+            } else if (constraint) {
+                styles.push(Str.finish(style, ';'));
+            }
         }
 
         return implode(' ', styles);
@@ -852,9 +857,9 @@ export class Arr {
      */
     public static where(
         array: any[] | Record<string, any>,
-        callback: (value: any) => boolean,
+        callback: (value: any, key?: number | string) => boolean,
     ): any[] | Record<string, any> {
-        return array_filter(array, callback);
+        return array_filter(array, callback, ARRAY_FILTER_USE_BOTH);
     }
 
     /**
@@ -872,7 +877,7 @@ export class Arr {
             return [];
         }
 
-        return Array.isArray(value) ? value : [value];
+        return Arr.accessible(value) ? value : [value];
     }
 
     /**
