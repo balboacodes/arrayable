@@ -50,4 +50,4 @@ Documentation for the methods and helpers can be found on Laravel's [Helpers doc
 
 ## Related
 
-If you like this package and are looking for an equivalent for string helpers, check out the [Stringable](https://github.com/balboacodes/stringable) package.
+If you like this package and are looking for string helpers, check out the [Stringable](https://github.com/balboacodes/stringable) package.
