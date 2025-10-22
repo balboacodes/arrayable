@@ -274,7 +274,7 @@ export class Arr {
     public static from(items: any): any[] {
         try {
             if (Arr.accessible(items)) {
-                return Array.from(Object.values(items));
+                return items;
             }
 
             return Array.from(items);
@@ -457,7 +457,7 @@ export class Arr {
         array: any[] | Record<string, any>,
         callback: (value: any, key?: number | string) => any,
     ): any[] | Record<string, any> {
-        const keys = array_keys(array); // [0, 1]
+        const keys = array_keys(array);
         let items: any[] | Record<string, any>;
 
         try {
@@ -590,6 +590,13 @@ export class Arr {
     }
 
     /**
+     * Prepend the key names of an associative array.
+     */
+    public static prependKeysWith(array: Record<string, any>, prependWith: string): Record<string, any> {
+        return Arr.mapWithKeys(array, (item, key) => ({ [prependWith + key]: item }));
+    }
+
+    /**
      * Get a value from the array, and remove it.
      */
     public static pull(array: any[] | Record<string, any>, key: number | string, defaultValue?: any): any {
@@ -642,12 +649,11 @@ export class Arr {
         keys = Arr.wrap(keys);
 
         return Arr.map(array, (item) => {
-            let result: any[] | Record<string, any> = Array.isArray(array) ? [] : {};
+            let result: any[] | Record<string, any> = Array.isArray(item) ? [] : {};
 
             for (const key of keys) {
                 if (Arr.accessible(item) && Arr.exists(item, key)) {
                     (result as any)[key] = (item as any)[key];
-                    result = Arr.whereNotUndefined(result);
                 }
             }
 
@@ -873,7 +879,7 @@ export class Arr {
      * If the given value is not an array and not undefined, wrap it in one.
      */
     public static wrap(value: any): any[] {
-        if (value === undefined) {
+        if (value === undefined || value === null) {
             return [];
         }
 

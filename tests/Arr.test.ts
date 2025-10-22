@@ -1027,247 +1027,110 @@ test('forget', () => {
     expect(array).toEqual({ 2: { 1: 'products' } });
 });
 
-// test("testFrom", () => {
-//     expect(Arr.from({foo: "bar"})).toEqual({foo: "bar"});
-//     expect(Arr.from( {foo: "bar"})).toEqual({foo: "bar"});
-//     expect(Arr.from(new TestArrayableObject())).toEqual({foo: "bar"});
-//     expect(Arr.from(new TestJsonableObject())).toEqual({foo: "bar"});
-//     expect(Arr.from(new TestJsonSerializeObject())).toEqual({foo: "bar"});
-//     expect(Arr.from(new TestJsonSerializeWithScalarValueObject())).toEqual(["foo"]);
+test('from', () => {
+    expect(Arr.from(['bar'])).toEqual(['bar']);
+    expect(Arr.from({ foo: 'bar' })).toEqual({ foo: 'bar' });
+    expect(Arr.from('foo')).toEqual(['f', 'o', 'o']);
+    expect(Arr.from(123)).toEqual([]);
+    expect(Arr.from(true)).toEqual([]);
+    expect(() => Arr.from(undefined)).toThrow('Items cannot be represented by a scalar value.');
+});
 
-//     expect(Arr.from(TestEnum::A)).toEqual({name: "A"});
-//     expect(value: 1}, Arr.from(TestBackedEnum::A)).toEqual({name: "A");
-//     expect(value: "A"}, Arr.from(TestStringBackedEnum::A)).toEqual({name: "A");
+test('testWrap', () => {
+    const string = 'a';
+    const array = ['a'];
+    const object = { value: 'a' };
+    expect(Arr.wrap(string)).toEqual(['a']);
+    expect(Arr.wrap(array)).toEqual(array);
+    expect(Arr.wrap(object)).toEqual(object);
+    expect(Arr.wrap(null)).toEqual([]);
+    expect(Arr.wrap([null])).toEqual([null]);
+    expect(Arr.wrap([null, null])).toEqual([null, null]);
+    expect(Arr.wrap('')).toEqual(['']);
+    expect(Arr.wrap([''])).toEqual(['']);
+    expect(Arr.wrap(false)).toEqual([false]);
+    expect(Arr.wrap([false])).toEqual([false]);
+    expect(Arr.wrap(0)).toEqual([0]);
+});
 
-//     $subject = [{}, {}];
-//     $items = new TestTraversableAndJsonSerializableObject($subject);
-//     expect(Arr.from($items)).toEqual($subject);
+test('testPrependKeysWith', () => {
+    const array = {
+        id: '123',
+        data: '456',
+        list: [1, 2, 3],
+        meta: { key: 1 },
+    };
 
-//     $items = new WeakMap();
-//     $items[($temp = new class {})] = "bar";
-//     expect(Arr.from($items)).toEqual(["bar"]);
+    expect(Arr.prependKeysWith(array, 'test.')).toEqual({
+        'test.id': '123',
+        'test.data': '456',
+        'test.list': [1, 2, 3],
+        'test.meta': { key: 1 },
+    });
+});
 
-//     expectException(InvalidArgumentException::class);
-//     // expect exception message: "Items cannot be represented by a scalar value."
-//     Arr.from(123);
-// })
+test('take', () => {
+    const array = [1, 2, 3, 4, 5, 6];
 
-// test("testWrap", () => {
-//     $string = "a";
-//     array = ["a"];
-//     $object = {};
-//     $object.value = "a";
-//     expect(Arr.wrap($string)).toEqual(["a"]);
-//     expect(Arr.wrap(array)).toEqual(array);
-//     expect(Arr.wrap($object)).toEqual([$object]);
-//     expect(Arr.wrap(null)).toEqual([]);
-//     expect(Arr.wrap([null])).toEqual([null]);
-//     expect(null], Arr.wrap([null, null])).toEqual([null);
-//     expect(Arr.wrap("")).toEqual([""]);
-//     expect(Arr.wrap([""])).toEqual([""]);
-//     expect(Arr.wrap(false)).toEqual([false]);
-//     expect(Arr.wrap([false])).toEqual([false]);
-//     expect(Arr.wrap(0)).toEqual([0]);
+    // Test with a positive limit, should return the first 'limit' elements.
+    expect(Arr.take(array, 3)).toEqual([1, 2, 3]);
 
-//     $obj = {};
-//     $obj.value = "a";
-//     $obj = unserialize(serialize($obj));
-//     expect(Arr.wrap($obj)).toEqual([$obj]);
-//     expect(Arr.wrap($obj)[0]).toEqual($obj);
-// })
+    // Test with a negative limit, should return the last 'abs(limit)' elements.
+    expect(Arr.take(array, -3)).toEqual([4, 5, 6]);
 
-// test("testSortByMany", () => {
-//     $unsorted = [
-//         {name: "John", age: 8, meta: [key: 3}],
-//         {name: "John", age: 10, meta: [key: 5}],
-//         {name: "Dave", age: 10, meta: [key: 3}],
-//         {name: "John", age: 8, meta: [key: 2}],
-//     ];
+    // Test with zero limit, should return an empty array.
+    expect(Arr.take(array, 0)).toEqual([]);
 
-//     // sort using keys
-//     $sorted = array_values(Arr.sort($unsorted, ["name", "age", "meta.key"]));
-//     assertEquals(
-//         [
-//             {name: "Dave", age: 10, meta: [key: 3}],
-//             {name: "John", age: 8, meta: [key: 2}],
-//             {name: "John", age: 8, meta: [key: 3}],
-//             {name: "John", age: 10, meta: [key: 5}],
-//         ],
-//         $sorted,
-//     );
+    // Test with a limit greater than the array size, should return the entire array.
+    expect(Arr.take(array, 10)).toEqual([1, 2, 3, 4, 5, 6]);
 
-//     // sort with order
-//     $sortedWithOrder = array_values(Arr.sort($unsorted, ["name", ["age", false], ["meta.key", true]]));
-//     assertEquals(
-//         [
-//             {name: "Dave", age: 10, meta: [key: 3}],
-//             {name: "John", age: 10, meta: [key: 5}],
-//             {name: "John", age: 8, meta: [key: 2}],
-//             {name: "John", age: 8, meta: [key: 3}],
-//         ],
-//         $sortedWithOrder,
-//     );
+    // Test with a negative limit greater than the array size, should return the entire array.
+    expect(Arr.take(array, -10)).toEqual([1, 2, 3, 4, 5, 6]);
+});
 
-//     // sort using callable
-//     $sortedWithCallable = array_values(
-//         Arr.sort($unsorted, [
-//             function ($a, $b) {
-//                 return $a["name"] <=> $b["name"];
-//             },
-//             function ($a, $b) {
-//                 return $b["age"] <=> $a["age"];
-//             },
-//             ["meta.key", true],
-//         ]),
-//     );
-//     assertEquals(
-//         [
-//             {name: "Dave", age: 10, meta: [key: 3}],
-//             {name: "John", age: 10, meta: [key: 5}],
-//             {name: "John", age: 8, meta: [key: 2}],
-//             {name: "John", age: 8, meta: [key: 3}],
-//         ],
-//         $sortedWithCallable,
-//     );
-// })
+test('select', () => {
+    const array = [
+        {
+            name: 'Taylor',
+            role: 'Developer',
+            age: 1,
+        },
+        {
+            name: 'Abigail',
+            role: 'Infrastructure',
+            age: 2,
+        },
+    ];
 
-// test("testKeyBy", () => {
-//     array = [{id: "123", data: "abc"}, {id: "345", data: "def"}, {id: "498", data: "hgi"}];
+    expect(Arr.select(array, ['name', 'age'])).toEqual([
+        { name: 'Taylor', age: 1 },
+        { name: 'Abigail', age: 2 },
+    ]);
 
-//     assertEquals(
-//         {
-//             123: [id: "123", data: "abc"},
-//             "345" => {id: "345", data: "def"},
-//             "498" => {id: "498", data: "hgi"},
-//         ],
-//         Arr.keyBy(array, "id"),
-//     );
-// })
+    expect(Arr.select(array, 'name')).toEqual([{ name: 'Taylor' }, { name: 'Abigail' }]);
 
-// test("testPrependKeysWith", () => {
-//     array = {
-//         id: "123",
-//         data: "456",
-//         list: [1, 2, 3},
-//         "meta" => {
-//             key: 1,
-//         },
-//     ];
+    expect(Arr.select(array, 'nonExistingKey')).toEqual([{}, {}]);
+});
 
-//     assertEquals(
-//         {
-//             test.id: "123",
-//             test.data: "456",
-//             test.list: [1, 2, 3},
-//             "test.meta" => {
-//                 key: 1,
-//             },
-//         ],
-//         Arr.prependKeysWith(array, "test."),
-//     );
-// })
+test('testReject', () => {
+    const array = [1, 2, 3, 4, 5, 6];
 
-// test("testTake", () => {
-//     array = [1, 2, 3, 4, 5, 6];
+    // Test rejection behavior (removing even numbers)
+    let result = Arr.reject(array, (value) => value % 2 === 0);
 
-//     // Test with a positive limit, should return the first 'limit' elements.
-//     expect(2, 3], Arr.take(array, 3)).toEqual([1);
+    expect(result).toEqual([1, 3, 5]);
 
-//     // Test with a negative limit, should return the last 'abs(limit)' elements.
-//     expect(5, 6], Arr.take(array, -3)).toEqual([4);
+    // Test key preservation with associative array
+    const assocArray = { a: 1, b: 2, c: 3, d: 4 };
 
-//     // Test with zero limit, should return an empty array.
-//     expect(Arr.take(array, 0)).toEqual([]);
+    result = Arr.reject(assocArray, (value) => value > 2);
 
-//     // Test with a limit greater than the array size, should return the entire array.
-//     expect(2, 3, 4, 5, 6], Arr.take(array, 10)).toEqual([1);
+    expect(result).toEqual({ a: 1, b: 2 });
+});
 
-//     // Test with a negative limit greater than the array size, should return the entire array.
-//     expect(2, 3, 4, 5, 6], Arr.take(array, -10)).toEqual([1);
-// })
+test('partition', () => {
+    const array = ['John', 'Jane', 'Greg'];
+    const result = Arr.partition(array, (value: string) => value.includes('J'));
 
-// test("testSelect", () => {
-//     array = [
-//         {
-//             name: "Taylor",
-//             role: "Developer",
-//             age: 1,
-//         },
-//         {
-//             name: "Abigail",
-//             role: "Infrastructure",
-//             age: 2,
-//         },
-//     ];
-
-//     assertEquals(
-//         [
-//             {
-//                 name: "Taylor",
-//                 age: 1,
-//             },
-//             {
-//                 name: "Abigail",
-//                 age: 2,
-//             },
-//         ],
-//         Arr.select(array, ["name", "age"]),
-//     );
-
-//     assertEquals(
-//         [
-//             {
-//                 name: "Taylor",
-//             },
-//             {
-//                 name: "Abigail",
-//             },
-//         ],
-//         Arr.select(array, "name"),
-//     );
-
-//     expect([]], Arr.select(array, "nonExistingKey")).toEqual([[]);
-
-//     expect([]], Arr.select(array, null)).toEqual([[]);
-// })
-
-// test("testReject", () => {
-//     array = [1, 2, 3, 4, 5, 6];
-
-//     // Test rejection behavior (removing even numbers)
-//     $result = Arr.reject(array, function (value) {
-//         return value % 2 === 0;
-//     });
-
-//     assertEquals(
-//         [
-//             0 => 1,
-//             2 => 3,
-//             4 => 5,
-//         ],
-//         $result,
-//     );
-
-//     // Test key preservation with associative array
-//     $assocArray = {a: 1, b: 2, c: 3, d: 4};
-
-//     $result = Arr.reject($assocArray, function (value) {
-//         return value > 2;
-//     });
-
-//     assertEquals(
-//         {
-//             a: 1,
-//             b: 2,
-//         },
-//         $result,
-//     );
-// })
-
-// test("testPartition", () => {
-//     array = ["John", "Jane", "Greg"];
-
-//     $result = Arr.partition(array, fn(string value) => str_contains(value, "J"));
-
-//     expect(1 => "Jane"], [2 => "Greg"]], $result).toEqual([[0 => "John");
-// });
+    expect(result).toEqual([['John', 'Jane'], ['Greg']]);
+});
