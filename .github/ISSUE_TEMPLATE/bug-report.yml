@@ -6,8 +6,8 @@ body:
           value: 'Please read our [contribution guide](https://github.com/balboacodes/arrayable/blob/main/.github/CONTRIBUTING.md) before submitting bug reports.'
     - type: input
       attributes:
-          label: Arrayable version
-          description: Provide the Arrayable version that you are using.
+          label: Version
+          description: Provide the version that you are using.
           placeholder: 0.1.0
       validations:
           required: true
