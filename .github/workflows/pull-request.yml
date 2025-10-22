@@ -26,7 +26,3 @@ jobs:
 
             - name: Execute tests
               run: npm run test
-
-            - uses: autofix-ci/action@v1
-              with:
-                  commit-message: 'ci: apply formatting'
