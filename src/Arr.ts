@@ -1,7 +1,6 @@
 // prettier-ignore
 import {
-    abs, array_all, array_any, array_filter, ARRAY_FILTER_USE_BOTH, array_find_key, array_first, array_flip, array_intersect_key, array_is_list, array_keys, array_last, array_map, array_merge, array_pop, array_push, array_reverse, array_shift, array_slice, array_unshift, array_values, count, empty, explode, http_build_query, implode, isset, krsort, ksort, PHP_QUERY_RFC3986, rsort, sort, SORT_NUMERIC, SORT_REGULAR, SORT_STRING, str_contains,
-    unset
+    array_all, array_any, array_filter, ARRAY_FILTER_USE_BOTH, array_find_key, array_flip, array_intersect_key, array_is_list, array_keys, array_map, array_merge, array_pop, array_push, array_reverse, array_shift, array_slice, array_unshift, count, empty, explode, http_build_query, isset, krsort, ksort, PHP_QUERY_RFC3986, rsort, sort, SORT_NUMERIC, SORT_REGULAR, SORT_STRING, unset
 } from '@balboacodes/php-utils';
 import { data_get, value } from './helpers';
 import { Str } from '@balboacodes/stringable';
@@ -104,7 +103,7 @@ export class Arr {
      * Divide an array into two arrays. One with keys and the other with values.
      */
     public static divide(array: any[] | Record<string, any>): [(number | string)[], any[]] {
-        return [array_keys(array), array_values(array)];
+        return [array_keys(array), Object.values(array)];
     }
 
     /**
@@ -178,7 +177,7 @@ export class Arr {
                 return value(defaultValue);
             }
 
-            return array_first(array);
+            return Object.values(array)[0];
         }
 
         const key = array_find_key(array, callback);
@@ -198,7 +197,7 @@ export class Arr {
 
         for (let item of Object.values(array)) {
             if (Arr.accessible(item)) {
-                const values = depth === 1 ? array_values(item) : Arr.flatten(item, depth - 1);
+                const values = depth === 1 ? Object.values(item) : Arr.flatten(item, depth - 1);
 
                 for (const value of Object.values(values)) {
                     (result as any)[key] = value;
@@ -241,7 +240,7 @@ export class Arr {
 
         keys: for (const key of keys) {
             // if the exact key exists in the top-level, remove it
-            if (Arr.exists(array, key) /* && !str_contains(String(key), '.') */) {
+            if (Arr.exists(array, key)) {
                 unset(array, key);
 
                 continue;
@@ -299,7 +298,7 @@ export class Arr {
             return (array as any)[key];
         }
 
-        if (!str_contains(String(key), '.')) {
+        if (!String(key).includes('.')) {
             return value(defaultValue);
         }
 
@@ -419,7 +418,7 @@ export class Arr {
      */
     public static join(array: any[] | Record<string, any>, glue: string, finalGlue: string = ''): any {
         if (finalGlue === '') {
-            return implode(glue, array);
+            return array.join(glue);
         }
 
         if (count(array) === 0) {
@@ -427,12 +426,12 @@ export class Arr {
         }
 
         if (count(array) === 1) {
-            return array_last(array);
+            return Object.values(array).pop();
         }
 
         const finalItem = array_pop(array);
 
-        return implode(glue, array) + finalGlue + (finalItem ?? '');
+        return array.join(glue) + finalGlue + (finalItem ?? '');
     }
 
     /**
@@ -444,7 +443,7 @@ export class Arr {
         defaultValue?: any | (() => any),
     ): any {
         if (callback === undefined) {
-            return empty(array) ? value(defaultValue) : array_last(array);
+            return empty(array) ? value(defaultValue) : Object.values(array).pop();
         }
 
         return Arr.first(array_reverse(array, true), callback, defaultValue);
@@ -803,7 +802,7 @@ export class Arr {
      */
     public static take(array: any[] | Record<string, any>, limit: number): any[] | Record<string, any> {
         if (limit < 0) {
-            return array_slice(array, limit, abs(limit));
+            return array_slice(array, limit, Math.abs(limit));
         }
 
         return array_slice(array, 0, limit);
@@ -824,7 +823,7 @@ export class Arr {
             }
         }
 
-        return implode(' ', classes);
+        return classes.join(' ');
     }
 
     /**
@@ -842,7 +841,7 @@ export class Arr {
             }
         }
 
-        return implode(' ', styles);
+        return styles.join(' ');
     }
 
     /**

@@ -1,6 +1,6 @@
 // prettier-ignore
 import {
-    array_first, array_key_first, array_key_last, array_last, array_shift, empty, explode, in_array,
+    array_key_first, array_key_last, array_shift, empty, explode, in_array,
 } from '@balboacodes/php-utils';
 import { Arr } from './Arr';
 
@@ -171,14 +171,14 @@ export function data_set<T>(
  * Get the first element of an array. Useful for method chaining.
  */
 export function head<T>(array: T[] | Record<string, T>): any {
-    return empty(array) ? false : array_first(array);
+    return empty(array) ? false : Object.values(array)[0];
 }
 
 /**
  * Get the last element from an array.
  */
 export function last<T>(array: T[] | Record<string, T>): any {
-    return empty(array) ? false : array_last(array);
+    return empty(array) ? false : Object.values(array).pop();
 }
 
 /**
