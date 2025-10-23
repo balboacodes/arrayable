@@ -46,8 +46,8 @@ const array = Arr.collapse([
 
 ## Documentation
 
-Documentation for the methods and helpers can be found on Laravel's [Helpers documentation](https://laravel.com/docs/12.x/helpers) page. Just translate PHP's syntax to JS like shown above.
+Documentation for the methods and helpers can be found on Laravel's [Arrays documentation](https://laravel.com/docs/12.x/helpers#arrays-and-objects-method-list) page. Just translate PHP's syntax to JS like shown above.
 
 ## Related
 
-If you like this package and are looking for string helpers, check out the [Stringable](https://github.com/balboacodes/stringable) package.
+If you like this package, be sure to check out our [other packages](https://www.npmjs.com/~balboacodes).
