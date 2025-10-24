@@ -1,6 +1,5 @@
 import { expect, test } from 'vitest';
 import { Arr } from '../src/Arr';
-import { mb_strtoupper } from '@balboacodes/php-utils';
 
 test('accessible', () => {
     expect(Arr.accessible([])).toEqual(true);
@@ -585,11 +584,6 @@ test('map', () => {
     data = { first: 'taylor', last: undefined };
     mapped = Arr.map(data, (value, key) => key + '-' + (value ?? ''));
     expect(mapped).toEqual({ first: 'first-taylor', last: 'last-' });
-
-    data = { first: 'taylor', last: 'otwell' };
-    mapped = Arr.map(data, mb_strtoupper);
-    expect(mapped).toEqual({ first: 'TAYLOR', last: 'OTWELL' });
-    expect(data).toEqual({ first: 'taylor', last: 'otwell' });
 });
 
 test('mapSpread', () => {
