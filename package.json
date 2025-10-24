@@ -1,6 +1,6 @@
 {
     "name": "@balboacodes/arrayable",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "A TypeScript port of Laravel's array helpers",
     "keywords": [
         "laravel",
@@ -19,12 +19,21 @@
     "author": "Balboa Codes",
     "type": "module",
     "main": "dist/index.js",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
     "files": [
         "dist",
         "LICENSE",
         "README.md"
     ],
     "types": "dist/index.d.ts",
+    "engines": {
+        "node": ">=20"
+    },
     "scripts": {
         "build": "tsc && vite build",
         "format": "prettier --write .",
