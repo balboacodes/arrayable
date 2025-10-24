@@ -47,7 +47,7 @@
         "vitest": "^3.2.4"
     },
     "dependencies": {
-        "@balboacodes/php-utils": "^0.4.0",
-        "@balboacodes/stringable": "^0.5.1"
+        "@balboacodes/php-utils": "^0.5.1",
+        "@balboacodes/stringable": "^0.5.2"
     }
 }
