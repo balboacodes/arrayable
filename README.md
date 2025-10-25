@@ -4,13 +4,7 @@
 
 ## About Arrayable
 
-Arrayable is a TypeScript port of [Laravel's](https://github.com/laravel/laravel) array helpers. It aims to bring a small dose of the expressive and elegant syntax Laravel is known for to the TypeScript community. It has no third-party dependencies, is fully-typed, and includes all of Laravel's tests ported to [Vitest](https://github.com/vitest-dev/vitest). While most helper methods have been ported over, some exceptions were made:
-
-- Methods that require third-party packages like `random` and `shuffle`
-- Methods that are not documented on Laravel's docs page
-- Methods that are not applicable to JavaScript like `float`, `isAssoc`, `prependKeysWith`, etc.
-
-Only arrays are currently supported, but if there is enough demand, this package can be expanded to allow for objects.
+Arrayable is a TypeScript port of [Laravel's](https://github.com/laravel/laravel) array helpers. It also supports object literals.
 
 ## Installation
 
@@ -32,6 +26,12 @@ const array = Arr.collapse([
 ]);
 
 // [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+const object = {'products': {'desk': {'price': 100}}};
+
+const flattened = Arr::dot(object);
+
+// {'products.desk.price': 100}
 ```
 
 ### Helpers
